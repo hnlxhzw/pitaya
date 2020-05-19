@@ -31,9 +31,9 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	nats "github.com/nats-io/nats.go"
-	"github.com/topfreegames/pitaya/constants"
-	"github.com/topfreegames/pitaya/logger"
-	"github.com/topfreegames/pitaya/protos"
+	"github.com/woshihaomei/pitaya/constants"
+	"github.com/woshihaomei/pitaya/logger"
+	"github.com/woshihaomei/pitaya/protos"
 )
 
 // NetworkEntity represent low-level network instance

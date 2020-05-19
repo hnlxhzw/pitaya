@@ -24,8 +24,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/topfreegames/pitaya/constants"
-	"github.com/topfreegames/pitaya/timer"
+	"github.com/woshihaomei/pitaya/constants"
+	"github.com/woshihaomei/pitaya/timer"
 )
 
 // NewTimer returns a new Timer containing a function that will be called

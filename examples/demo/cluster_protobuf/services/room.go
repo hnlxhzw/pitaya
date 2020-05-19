@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/topfreegames/pitaya"
-	"github.com/topfreegames/pitaya/component"
-	"github.com/topfreegames/pitaya/config"
-	"github.com/topfreegames/pitaya/examples/demo/cluster_protobuf/protos"
-	"github.com/topfreegames/pitaya/groups"
-	"github.com/topfreegames/pitaya/timer"
+	"github.com/woshihaomei/pitaya"
+	"github.com/woshihaomei/pitaya/component"
+	"github.com/woshihaomei/pitaya/config"
+	"github.com/woshihaomei/pitaya/examples/demo/cluster_protobuf/protos"
+	"github.com/woshihaomei/pitaya/groups"
+	"github.com/woshihaomei/pitaya/timer"
 )
 
 type (

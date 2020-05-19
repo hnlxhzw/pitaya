@@ -24,11 +24,11 @@ import (
 	"container/list"
 	"time"
 
-	"github.com/topfreegames/pitaya"
-	"github.com/topfreegames/pitaya/acceptor"
-	"github.com/topfreegames/pitaya/constants"
-	"github.com/topfreegames/pitaya/logger"
-	"github.com/topfreegames/pitaya/metrics"
+	"github.com/woshihaomei/pitaya"
+	"github.com/woshihaomei/pitaya/acceptor"
+	"github.com/woshihaomei/pitaya/constants"
+	"github.com/woshihaomei/pitaya/logger"
+	"github.com/woshihaomei/pitaya/metrics"
 )
 
 // RateLimiter wraps net.Conn by applying rate limiting and return empty

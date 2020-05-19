@@ -35,9 +35,9 @@ import (
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/sirupsen/logrus"
-	"github.com/topfreegames/pitaya/conn/message"
-	"github.com/topfreegames/pitaya/logger"
-	"github.com/topfreegames/pitaya/protos"
+	"github.com/woshihaomei/pitaya/conn/message"
+	"github.com/woshihaomei/pitaya/logger"
+	"github.com/woshihaomei/pitaya/protos"
 )
 
 // Command struct. Save the input and output type and proto descriptor for each

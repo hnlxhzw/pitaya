@@ -8,13 +8,13 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
-	"github.com/topfreegames/pitaya"
-	"github.com/topfreegames/pitaya/acceptor"
-	"github.com/topfreegames/pitaya/acceptorwrapper"
-	"github.com/topfreegames/pitaya/component"
-	"github.com/topfreegames/pitaya/config"
-	"github.com/topfreegames/pitaya/examples/demo/rate_limiting/services"
-	"github.com/topfreegames/pitaya/serialize/json"
+	"github.com/woshihaomei/pitaya"
+	"github.com/woshihaomei/pitaya/acceptor"
+	"github.com/woshihaomei/pitaya/acceptorwrapper"
+	"github.com/woshihaomei/pitaya/component"
+	"github.com/woshihaomei/pitaya/config"
+	"github.com/woshihaomei/pitaya/examples/demo/rate_limiting/services"
+	"github.com/woshihaomei/pitaya/serialize/json"
 )
 
 func configureFrontend(port int) {

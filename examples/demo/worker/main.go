@@ -7,11 +7,11 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
-	"github.com/topfreegames/pitaya"
-	"github.com/topfreegames/pitaya/acceptor"
-	"github.com/topfreegames/pitaya/component"
-	"github.com/topfreegames/pitaya/examples/demo/worker/services"
-	"github.com/topfreegames/pitaya/serialize/json"
+	"github.com/woshihaomei/pitaya"
+	"github.com/woshihaomei/pitaya/acceptor"
+	"github.com/woshihaomei/pitaya/component"
+	"github.com/woshihaomei/pitaya/examples/demo/worker/services"
+	"github.com/woshihaomei/pitaya/serialize/json"
 )
 
 func configureMetagame() {

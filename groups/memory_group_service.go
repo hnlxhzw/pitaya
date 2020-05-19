@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/topfreegames/pitaya/config"
-	"github.com/topfreegames/pitaya/constants"
+	"github.com/woshihaomei/pitaya/config"
+	"github.com/woshihaomei/pitaya/constants"
 )
 
 var (

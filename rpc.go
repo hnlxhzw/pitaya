@@ -25,9 +25,9 @@ import (
 	"reflect"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/topfreegames/pitaya/constants"
-	"github.com/topfreegames/pitaya/route"
-	"github.com/topfreegames/pitaya/worker"
+	"github.com/woshihaomei/pitaya/constants"
+	"github.com/woshihaomei/pitaya/route"
+	"github.com/woshihaomei/pitaya/worker"
 )
 
 // RPC calls a method in a different server

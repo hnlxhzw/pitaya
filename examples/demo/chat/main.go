@@ -11,14 +11,14 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
-	"github.com/topfreegames/pitaya"
-	"github.com/topfreegames/pitaya/acceptor"
-	"github.com/topfreegames/pitaya/component"
-	"github.com/topfreegames/pitaya/config"
-	"github.com/topfreegames/pitaya/groups"
-	"github.com/topfreegames/pitaya/logger"
-	"github.com/topfreegames/pitaya/serialize/json"
-	"github.com/topfreegames/pitaya/timer"
+	"github.com/woshihaomei/pitaya"
+	"github.com/woshihaomei/pitaya/acceptor"
+	"github.com/woshihaomei/pitaya/component"
+	"github.com/woshihaomei/pitaya/config"
+	"github.com/woshihaomei/pitaya/groups"
+	"github.com/woshihaomei/pitaya/logger"
+	"github.com/woshihaomei/pitaya/serialize/json"
+	"github.com/woshihaomei/pitaya/timer"
 )
 
 type (

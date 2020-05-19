@@ -23,10 +23,10 @@ package pitaya
 import (
 	"context"
 
-	"github.com/topfreegames/pitaya/constants"
-	"github.com/topfreegames/pitaya/logger"
-	"github.com/topfreegames/pitaya/protos"
-	"github.com/topfreegames/pitaya/session"
+	"github.com/woshihaomei/pitaya/constants"
+	"github.com/woshihaomei/pitaya/logger"
+	"github.com/woshihaomei/pitaya/protos"
+	"github.com/woshihaomei/pitaya/session"
 )
 
 // SendKickToUsers sends kick to an user array

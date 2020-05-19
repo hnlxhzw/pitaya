@@ -23,15 +23,15 @@ package cluster
 import (
 	"context"
 
-	"github.com/topfreegames/pitaya/conn/message"
-	"github.com/topfreegames/pitaya/constants"
-	pcontext "github.com/topfreegames/pitaya/context"
-	"github.com/topfreegames/pitaya/interfaces"
-	"github.com/topfreegames/pitaya/logger"
-	"github.com/topfreegames/pitaya/protos"
-	"github.com/topfreegames/pitaya/route"
-	"github.com/topfreegames/pitaya/session"
-	"github.com/topfreegames/pitaya/tracing"
+	"github.com/woshihaomei/pitaya/conn/message"
+	"github.com/woshihaomei/pitaya/constants"
+	pcontext "github.com/woshihaomei/pitaya/context"
+	"github.com/woshihaomei/pitaya/interfaces"
+	"github.com/woshihaomei/pitaya/logger"
+	"github.com/woshihaomei/pitaya/protos"
+	"github.com/woshihaomei/pitaya/route"
+	"github.com/woshihaomei/pitaya/session"
+	"github.com/woshihaomei/pitaya/tracing"
 )
 
 // RPCServer interface
