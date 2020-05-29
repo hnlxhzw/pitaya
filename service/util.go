@@ -199,10 +199,16 @@ func processHandlerMessage(
 		return nil, err
 	}
 
-	ret, err := serializeReturn(serializer, resp)
-	if err != nil {
-		return nil, err
+	//edit by shawn 这里有个逻辑 如果是notify 消息返回都是nil 那就没必要去做解析了
+	if resp != nil{
+		ret, err := serializeReturn(serializer, resp)
+		if err != nil {
+			return nil, err
+		}
+		return ret, nil
 	}
 
-	return ret, nil
+	return nil, nil
+
+
 }
