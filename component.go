@@ -28,6 +28,7 @@ import (
 var (
 	handlerComp = make([]regComp, 0)
 	remoteComp  = make([]regComp, 0)
+	customerComp = make([]regComp, 0) //自定义的组件 change by shawn
 )
 
 type regComp struct {
@@ -45,6 +46,11 @@ func RegisterRemote(c component.Component, options ...component.Option) {
 	remoteComp = append(remoteComp, regComp{c, options})
 }
 
+// RegisterCustomer change by shawn 注册自定义组建 这里是想要利用 框架底层的 Lifecycle
+func RegisterCustomer(c component.Component, options ...component.Option) {
+	customerComp = append(customerComp, regComp{c, options})
+}
+
 func startupComponents() {
 	// component initialize hooks
 	for _, c := range handlerComp {
@@ -53,6 +59,14 @@ func startupComponents() {
 
 	// component after initialize hooks
 	for _, c := range handlerComp {
+		c.comp.AfterInit()
+	}
+
+	for _, c := range customerComp {
+		c.comp.Init()
+	}
+
+	for _, c := range customerComp {
 		c.comp.AfterInit()
 	}
 
@@ -100,5 +114,14 @@ func shutdownComponents() {
 	// reverse call `Shutdown` hooks
 	for i := length - 1; i >= 0; i-- {
 		remoteComp[i].comp.Shutdown()
+	}
+
+	length = len(customerComp)
+	for i := length - 1; i >= 0; i-- {
+		customerComp[i].comp.BeforeShutdown()
+	}
+
+	for i := length - 1; i >= 0; i-- {
+		customerComp[i].comp.Shutdown()
 	}
 }
