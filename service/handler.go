@@ -180,6 +180,11 @@ func (h *HandlerService) Handle(conn acceptor.PlayerConn) {
 	}()
 
 	for {
+		//change by shawn 状态为已关闭 就不需要再去读数据了
+		if a.GetStatus() == constants.StatusClosed{
+			logger.Log.Debugf("Agent Close!!!!")
+			return
+		}
 		msg, err := conn.GetNextMessage()
 
 		if err != nil {
