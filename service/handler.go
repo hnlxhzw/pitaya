@@ -24,6 +24,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/woshihaomei/pitaya/util"
 	"strings"
 	"time"
 
@@ -117,6 +118,8 @@ func NewHandlerService(
 
 // Dispatch message to corresponding logic handler
 func (h *HandlerService) Dispatch(thread int) {
+
+	defer util.AutoRecover("Dispatch")
 	// TODO: This timer is being stopped multiple times, it probably doesn't need to be stopped here
 	defer timer.GlobalTicker.Stop()
 
@@ -165,6 +168,7 @@ func (h *HandlerService) Register(comp component.Component, opts []component.Opt
 
 // Handle handles messages from a conn
 func (h *HandlerService) Handle(conn acceptor.PlayerConn) {
+	defer util.AutoRecover("HandlerService Handle")
 	// create a client agent and startup write goroutine
 	a := agent.NewAgent(conn, h.decoder, h.encoder, h.serializer, h.heartbeatTimeout, h.messagesBufferSize, h.appDieChan, h.messageEncoder, h.metricsReporters)
 

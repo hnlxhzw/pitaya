@@ -125,6 +125,8 @@ func (r *RemoteService) AddRemoteBindingListener(bindingListener cluster.RemoteB
 
 // Call processes a remote call
 func (r *RemoteService) Call(ctx context.Context, req *protos.Request) (*protos.Response, error) {
+	defer util.AutoRecover("Call")
+
 	c, err := util.GetContextFromRequest(req, r.server.ID)
 	c = util.StartSpanFromRequest(c, r.server.ID, req.GetMsg().GetRoute())
 	var res *protos.Response
@@ -149,6 +151,8 @@ func (r *RemoteService) Call(ctx context.Context, req *protos.Request) (*protos.
 
 // SessionBindRemote is called when a remote server binds a user session and want us to acknowledge it
 func (r *RemoteService) SessionBindRemote(ctx context.Context, msg *protos.BindMsg) (*protos.Response, error) {
+	defer util.AutoRecover("SessionBindRemote")
+
 	for _, r := range r.remoteBindingListeners {
 		r.OnUserBind(msg.Uid, msg.Fid)
 	}
@@ -159,6 +163,7 @@ func (r *RemoteService) SessionBindRemote(ctx context.Context, msg *protos.BindM
 
 // PushToUser sends a push to user
 func (r *RemoteService) PushToUser(ctx context.Context, push *protos.Push) (*protos.Response, error) {
+	defer util.AutoRecover("PushToUser")
 	logger.Log.Debugf("sending push to user %s: %v", push.GetUid(), string(push.Data))
 	s := session.GetSessionByUID(push.GetUid())
 	if s != nil {
@@ -175,6 +180,8 @@ func (r *RemoteService) PushToUser(ctx context.Context, push *protos.Push) (*pro
 
 // KickUser sends a kick to user
 func (r *RemoteService) KickUser(ctx context.Context, kick *protos.KickMsg) (*protos.KickAnswer, error) {
+	defer util.AutoRecover("KickUser")
+
 	logger.Log.Debugf("sending kick to user %s", kick.GetUserId())
 	s := session.GetSessionByUID(kick.GetUserId())
 	if s != nil {
@@ -207,6 +214,8 @@ func (r *RemoteService) DoRPC(ctx context.Context, serverID string, route *route
 
 // RPC makes rpcs
 func (r *RemoteService) RPC(ctx context.Context, serverID string, route *route.Route, reply proto.Message, arg proto.Message) error {
+	defer util.AutoRecover("RemoteService RPC")
+
 	var data []byte
 	var err error
 	if arg != nil {
