@@ -230,7 +230,7 @@ func GetContextFromRequest(req *protos.Request, serverID string) (context.Contex
 
 func AutoRecover(nameTag string) {
 	if err := recover(); err != nil {
-		logger.Log.Debugf("%s", debug.Stack())
 		logger.Log.Fatalf("creash at goroutine NameTag = %s ;err = %s", nameTag, err)
+		logger.Log.Fatalf("%s", debug.Stack())
 	}
 }
