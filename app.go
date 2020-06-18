@@ -442,6 +442,9 @@ func Start() {
 	session.CloseAll()
 	shutdownModules()
 	shutdownComponents()
+
+	logger.Log.Warn("server is stopping done...")
+	<-time.After(time.Second * 5)
 }
 
 func listen() {
