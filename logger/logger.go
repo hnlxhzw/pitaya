@@ -45,6 +45,11 @@ type Logger interface {
 	Warn(args ...interface{})
 	Warnf(format string, args ...interface{})
 	Warnln(args ...interface{})
+
+	//change by shawn 这个用于应用层打印 来记录调试信息
+	Trace(args ...interface{})
+	Tracef(format string, args ...interface{})
+	Traceln(args ...interface{})
 }
 
 // Log is the default logger
