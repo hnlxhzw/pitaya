@@ -51,7 +51,7 @@ require (
 	github.com/prometheus/client_golang v0.8.0
 	github.com/prometheus/common v0.0.0-20180801064454-c7de2306084e // indirect
 	github.com/prometheus/procfs v0.0.0-20180725123919-05ee40e3a273 // indirect
-	github.com/sirupsen/logrus v1.0.6
+	github.com/sirupsen/logrus v1.6.0
 	github.com/soheilhy/cmux v0.1.4 // indirect
 	github.com/spf13/afero v1.1.1 // indirect
 	github.com/spf13/cast v1.2.0 // indirect
