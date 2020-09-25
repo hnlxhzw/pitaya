@@ -26,6 +26,7 @@ import (
 	"os/signal"
 	"reflect"
 	"strings"
+	"sync"
 	"syscall"
 
 	"time"
@@ -414,6 +415,7 @@ func Start() {
 		remoteService,
 		app.messageEncoder,
 		app.metricsReporters,
+		app.config.GetInt("pitaya.concurrency.handler.dispatch"),
 	)
 
 	periodicMetrics()
@@ -454,9 +456,14 @@ func listen() {
 	timer.GlobalTicker = time.NewTicker(timer.Precision)
 
 	logger.Log.Infof("starting server %s:%s", app.server.Type, app.server.ID)
-	for i := 0; i < app.config.GetInt("pitaya.concurrency.handler.dispatch"); i++ {
-		go handlerService.Dispatch(i)
+	wg := &sync.WaitGroup{}
+	dispatchNum := app.config.GetInt("pitaya.concurrency.handler.dispatch")
+	wg.Add(dispatchNum)
+	for i := 0; i < dispatchNum; i++ {
+		go handlerService.Dispatch(i, wg)
 	}
+	wg.Wait()
+
 	for _, acc := range app.acceptors {
 		a := acc
 		go func() {

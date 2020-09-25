@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"github.com/woshihaomei/pitaya/util"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/woshihaomei/pitaya/acceptor"
@@ -60,8 +61,12 @@ type (
 	// HandlerService service
 	HandlerService struct {
 		appDieChan         chan bool             // die channel app
-		chLocalProcess     chan unhandledMessage // channel of messages that will be processed locally
-		chRemoteProcess    chan unhandledMessage // channel of messages that will be processed remotely
+		//chLocalProcess     chan unhandledMessage // channel of messages that will be processed locally
+		//chRemoteProcess    chan unhandledMessage // channel of messages that will be processed remotely
+		chLocalProcessMap     map[int]chan unhandledMessage // channel map of messages that will be processed locally 改成多个channel
+		chRemoteProcessMap    map[int]chan unhandledMessage // channel map of messages that will be processed remotely
+		localProcessBufferSize int
+		remoteProcessBufferSize int
 		decoder            codec.PacketDecoder   // binary decoder
 		encoder            codec.PacketEncoder   // binary encoder
 		heartbeatTimeout   time.Duration
@@ -72,6 +77,8 @@ type (
 		services           map[string]*component.Service // all registered service
 		messageEncoder     message.Encoder
 		metricsReporters   []metrics.Reporter
+		rw sync.RWMutex
+		dispatchNum int
 	}
 
 	unhandledMessage struct {
@@ -96,11 +103,20 @@ func NewHandlerService(
 	remoteService *RemoteService,
 	messageEncoder message.Encoder,
 	metricsReporters []metrics.Reporter,
+	dispatchNum int,
 ) *HandlerService {
+
 	h := &HandlerService{
 		services:           make(map[string]*component.Service),
-		chLocalProcess:     make(chan unhandledMessage, localProcessBufferSize),
-		chRemoteProcess:    make(chan unhandledMessage, remoteProcessBufferSize),
+		//chLocalProcess:     make(chan unhandledMessage, localProcessBufferSize),
+		//chRemoteProcess:    make(chan unhandledMessage, remoteProcessBufferSize),
+		//因为原来的有n个dispatch对应
+		// 一个channel读取数据 这样有可能会出现请求的先后顺序问题
+		//改成把每个dispatch进程都对应一个channel 每一个conn 对应的数据都会发到同一个channel中
+		chLocalProcessMap:    make(map[int]chan unhandledMessage, dispatchNum),
+		chRemoteProcessMap:    make(map[int]chan unhandledMessage, dispatchNum),
+		localProcessBufferSize: localProcessBufferSize,
+		remoteProcessBufferSize: remoteProcessBufferSize,
 		decoder:            packetDecoder,
 		encoder:            packetEncoder,
 		messagesBufferSize: messagesBufferSize,
@@ -111,26 +127,45 @@ func NewHandlerService(
 		remoteService:      remoteService,
 		messageEncoder:     messageEncoder,
 		metricsReporters:   metricsReporters,
+		dispatchNum: dispatchNum,
 	}
 
 	return h
 }
 
 // Dispatch message to corresponding logic handler
-func (h *HandlerService) Dispatch(thread int) {
+func (h *HandlerService) Dispatch(thread int, wg *sync.WaitGroup) {
+	h.rw.Lock()
 
 	defer util.AutoRecover("Dispatch")
 	// TODO: This timer is being stopped multiple times, it probably doesn't need to be stopped here
 	defer timer.GlobalTicker.Stop()
 
+	defer func() {
+		h.rw.Lock()
+		close(h.chLocalProcessMap[thread])
+		delete(h.chLocalProcessMap, thread)
+		close(h.chRemoteProcessMap[thread])
+		delete(h.chRemoteProcessMap, thread)
+		h.rw.Unlock()
+	}()
+
+	chLocalProcess := make(chan unhandledMessage, h.localProcessBufferSize)
+	h.chLocalProcessMap[thread] = chLocalProcess
+	chRemoteProcess := make(chan unhandledMessage, h.remoteProcessBufferSize)
+	h.chRemoteProcessMap[thread] = chRemoteProcess
+
+	h.rw.Unlock()
+	wg.Done()
+
 	for {
 		// Calls to remote servers block calls to local server
 		select {
-		case lm := <-h.chLocalProcess:
+		case lm := <- chLocalProcess:
 			metrics.ReportMessageProcessDelayFromCtx(lm.ctx, h.metricsReporters, "local")
 			h.localProcess(lm.ctx, lm.agent, lm.route, lm.msg)
 
-		case rm := <-h.chRemoteProcess:
+		case rm := <- chRemoteProcess:
 			metrics.ReportMessageProcessDelayFromCtx(rm.ctx, h.metricsReporters, "remote")
 			h.remoteService.remoteProcess(rm.ctx, nil, rm.agent, rm.route, rm.msg)
 
@@ -300,11 +335,13 @@ func (h *HandlerService) processMessage(a *agent.Agent, msg *message.Message) {
 		route: r,
 		msg:   msg,
 	}
+
+	dispatchIndex := h.GetChProcessIndex(a)
 	if r.SvType == h.server.Type {
-		h.chLocalProcess <- message
+		h.chLocalProcessMap[dispatchIndex] <- message
 	} else {
 		if h.remoteService != nil {
-			h.chRemoteProcess <- message
+			h.chRemoteProcessMap[dispatchIndex] <- message
 		} else {
 			logger.Log.Warnf("request made to another server type but no remoteService running")
 		}
@@ -351,4 +388,9 @@ func (h *HandlerService) Docs(getPtrNames bool) (map[string]interface{}, error) 
 		return map[string]interface{}{}, nil
 	}
 	return docgenerator.HandlersDocs(h.server.Type, h.services, getPtrNames)
+}
+
+// 获取需要分配到的 dispatch id
+func (h *HandlerService) GetChProcessIndex(a *agent.Agent) int {
+	return int(a.Session.ID()%int64(h.dispatchNum))
 }
