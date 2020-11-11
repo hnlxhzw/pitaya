@@ -81,7 +81,7 @@ func RegisterCustomerModule(module interfaces.Module, name string) error {
 	}
 
 	modulesMap[name] = module
-	customerModulesArr = append(modulesArr, moduleWrapper{
+	customerModulesArr = append(customerModulesArr, moduleWrapper{
 		module: module,
 		name:   name,
 	})

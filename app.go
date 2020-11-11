@@ -447,7 +447,7 @@ func Start() {
 	shutdownComponents()
 
 	logger.Log.Warn("server is stopping done...")
-	<-time.After(time.Second * 5)
+	//<-time.After(time.Second * 5)
 }
 
 func listen() {
