@@ -439,15 +439,15 @@ func Start() {
 		close(app.dieChan)
 	}
 
-	logger.Log.Warn("server is stopping...")
+	logger.Log.Info("server is stopping...")
 
 	session.CloseAll()
 	shutdownCustomerModules()
 	shutdownModules()
 	shutdownComponents()
 
-	logger.Log.Warn("server is stopping done...")
-	//<-time.After(time.Second * 5)
+	logger.Log.Info("server is stopping done...")
+	<-time.After(time.Second * 3)
 }
 
 func listen() {
