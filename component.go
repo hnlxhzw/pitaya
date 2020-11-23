@@ -46,7 +46,7 @@ func RegisterRemote(c component.Component, options ...component.Option) {
 	remoteComp = append(remoteComp, regComp{c, options})
 }
 
-// RegisterCustomer change by shawn 注册自定义组建 这里是想要利用 框架底层的 Lifecycle
+// RegisterCustomer add by shawn 注册自定义组建 这里是想要利用 框架底层的 Lifecycle 这个暂时没地方用到
 func RegisterCustomer(c component.Component, options ...component.Option) {
 	customerComp = append(customerComp, regComp{c, options})
 }

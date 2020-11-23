@@ -42,7 +42,7 @@ func SendPushToUsers(route string, v interface{}, uids []string, frontendType st
 
 	var notPushedUids []string
 
-	logger.Log.Debugf("Type=PushToUsers Route=%s, Data=%+v, SvType=%s, #Users=%d", route, v, frontendType, len(uids))
+	//logger.Log.Debugf("Type=PushToUsers Route=%s, Data=%+v, SvType=%s, #Users=%d", route, v, frontendType, len(uids))
 
 	for _, uid := range uids {
 		if s := session.GetSessionByUID(uid); s != nil && app.server.Type == frontendType {

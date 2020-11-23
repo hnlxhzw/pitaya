@@ -442,6 +442,7 @@ func Start() {
 	logger.Log.Warn("server is stopping...")
 
 	session.CloseAll()
+	shutdownCustomerModules()
 	shutdownModules()
 	shutdownComponents()
 
@@ -486,6 +487,7 @@ func listen() {
 	}
 
 	startModules()
+	startCustomerModules()
 
 	logger.Log.Info("all modules started!")
 

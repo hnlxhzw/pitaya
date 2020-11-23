@@ -30,6 +30,7 @@ import (
 var (
 	modulesMap = make(map[string]interfaces.Module)
 	modulesArr = []moduleWrapper{}
+	customerModulesArr = []moduleWrapper{} //add by shawn 用户自定义组件 加载流程 component > customerComp > module > customerModule 销毁流程 customerModule > module > component > customerComp
 )
 
 type moduleWrapper struct {
@@ -73,6 +74,20 @@ func RegisterModuleBefore(module interfaces.Module, name string) error {
 
 	return nil
 }
+// RegisterCustomerModule 用户自动义模块
+func RegisterCustomerModule(module interfaces.Module, name string) error {
+	if err := alreadyRegistered(name); err != nil {
+		return err
+	}
+
+	modulesMap[name] = module
+	customerModulesArr = append(modulesArr, moduleWrapper{
+		module: module,
+		name:   name,
+	})
+
+	return nil
+}
 
 // GetModule gets a module with a name
 func GetModule(name string) (interfaces.Module, error) {
@@ -105,6 +120,21 @@ func startModules() {
 		logger.Log.Infof("module: %s successfully loaded", modWrapper.name)
 	}
 }
+// startCustomerModules add by shawn 启动所有自定义的模块
+func startCustomerModules() {
+	logger.Log.Debug("initializing all customer modules")
+	for _, modWrapper := range customerModulesArr {
+		logger.Log.Debugf("initializing customer module: %s", modWrapper.name)
+		if err := modWrapper.module.Init(); err != nil {
+			logger.Log.Fatalf("error starting customer module %s, error: %s", modWrapper.name, err.Error())
+		}
+	}
+
+	for _, modWrapper := range customerModulesArr {
+		modWrapper.module.AfterInit()
+		logger.Log.Infof("customer module: %s successfully loaded", modWrapper.name)
+	}
+}
 
 // shutdownModules starts all modules in reverse order
 func shutdownModules() {
@@ -121,5 +151,22 @@ func shutdownModules() {
 			logger.Log.Warnf("error stopping module: %s", name)
 		}
 		logger.Log.Infof("module: %s stopped!", name)
+	}
+}
+// shutdownCustomerModules add by shawn 关闭所有自定义的模块
+func shutdownCustomerModules() {
+	for i := len(customerModulesArr) - 1; i >= 0; i-- {
+		customerModulesArr[i].module.BeforeShutdown()
+	}
+
+	for i := len(customerModulesArr) - 1; i >= 0; i-- {
+		name := customerModulesArr[i].name
+		mod := customerModulesArr[i].module
+
+		logger.Log.Debugf("stopping customer module: %s", name)
+		if err := mod.Shutdown(); err != nil {
+			logger.Log.Warnf("error stopping customer module: %s", name)
+		}
+		logger.Log.Infof("customer module: %s stopped!", name)
 	}
 }
