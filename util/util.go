@@ -24,11 +24,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"reflect"
-	"runtime/debug"
-	"strconv"
-
 	"github.com/woshihaomei/pitaya/conn/message"
 	"github.com/woshihaomei/pitaya/constants"
 	pcontext "github.com/woshihaomei/pitaya/context"
@@ -39,6 +34,9 @@ import (
 	"github.com/woshihaomei/pitaya/serialize/json"
 	"github.com/woshihaomei/pitaya/serialize/protobuf"
 	"github.com/woshihaomei/pitaya/tracing"
+	"os"
+	"reflect"
+	"runtime/debug"
 
 	"github.com/google/uuid"
 	opentracing "github.com/opentracing/opentracing-go"
@@ -67,9 +65,9 @@ func Pcall(method reflect.Method, args []reflect.Value) (rets interface{}, err e
 		if rec := recover(); rec != nil {
 			// Try to use logger from context here to help trace error cause
 			stackTrace := debug.Stack()
-			stackTraceAsRawStringLiteral := strconv.Quote(string(stackTrace))
+			//stackTraceAsRawStringLiteral := strconv.Quote(string(stackTrace))
 			log := getLoggerFromArgs(args)
-			log.Errorf("panic - pitaya/dispatch: methodName=%s panicData=%v stackTrace=%s", method.Name, rec, stackTraceAsRawStringLiteral)
+			log.Errorf("panic - pitaya/dispatch: methodName=%s panicData=%v stackTrace=%s", method.Name, rec, stackTrace)
 
 			if s, ok := rec.(string); ok {
 				err = errors.New(s)

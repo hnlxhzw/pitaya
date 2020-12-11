@@ -435,7 +435,7 @@ func Start() {
 	case <-app.dieChan:
 		logger.Log.Warn("the app will shutdown in a few seconds")
 	case s := <-sg:
-		logger.Log.Warn("got signal: ", s, ", shutting down...")
+		logger.Log.Warn("got signal: %s ...shutting down... %s, ", s, app.server.Type)
 		close(app.dieChan)
 	}
 
@@ -447,7 +447,7 @@ func Start() {
 	shutdownComponents()
 
 	logger.Log.Info("server is stopping done...")
-	<-time.After(time.Second * 3)
+	<-time.After(time.Second * 1)
 }
 
 func listen() {
