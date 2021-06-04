@@ -369,6 +369,8 @@ func (c *Client) ConnectTo(addr string, tlsConfig ...*tls.Config) error {
 func (c *Client) ConnectToWS(addr string, path string, tlsConfig ...*tls.Config) error {
 	u := url.URL{Scheme: "ws", Host: addr, Path: path}
 	dialer := websocket.DefaultDialer
+	dialer.WriteBufferSize = 40960
+	dialer.ReadBufferSize = 40960
 
 	if len(tlsConfig) > 0 {
 		dialer.TLSClientConfig = tlsConfig[0]
