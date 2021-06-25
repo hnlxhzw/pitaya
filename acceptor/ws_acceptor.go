@@ -216,11 +216,8 @@ func (c *WSConn) Read(b []byte) (int, error) {
 	if err != nil && err != io.EOF {
 		return n, err
 	} else if err == io.EOF {
-		_, r, err := c.conn.NextReader()
-		if err != nil {
-			return 0, err
-		}
-		c.reader = r
+		c.reader = nil
+		return n, err
 	}
 
 	return n, nil

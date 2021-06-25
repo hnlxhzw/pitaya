@@ -31,6 +31,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"io"
 
 	"github.com/woshihaomei/pitaya/acceptor"
 
@@ -93,11 +94,11 @@ func (c *Client) ConnectedStatus() bool {
 
 // New returns a new client
 func New(logLevel logrus.Level, requestTimeout ...time.Duration) *Client {
-	l := logrus.New()
-	l.Formatter = &logrus.TextFormatter{}
-	l.SetLevel(logLevel)
-
-	logger.Log = l
+	//l := logrus.New()
+	//l.Formatter = &logrus.TextFormatter{}
+	//l.SetLevel(logLevel)
+	//
+	//logger.Log = l
 
 	reqTimeout := 5 * time.Second
 	if len(requestTimeout) > 0 {
@@ -270,17 +271,23 @@ func (c *Client) handlePackets() {
 
 func (c *Client) readPackets(buf *bytes.Buffer) ([]*packet.Packet, error) {
 	// listen for sv messages
-	data := make([]byte, 1024)
-	n := len(data)
+	data := make([]byte, 2048)
+	//n := len(data)
 	var err error
 
-	for n == len(data) {
-		n, err = c.conn.Read(data)
-		if err != nil {
+	//OuterLoop:
+	for {
+		n, err := c.conn.Read(data)
+		if err == io.EOF{
+			buf.Write(data[:n])
+			break
+		}else if err != nil {
 			return nil, err
 		}
+
 		buf.Write(data[:n])
 	}
+
 	packets, err := c.packetDecoder.Decode(buf.Bytes())
 	if err != nil {
 		logger.Log.Errorf("error decoding packet from server: %s", err.Error())
