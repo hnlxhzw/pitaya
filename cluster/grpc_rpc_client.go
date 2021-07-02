@@ -254,14 +254,13 @@ func (gs *GRPCClient) AddServer(sv *Server) {
 		logger.Log.Errorf("[grpc client] server %s has no %s specified in metadata", sv.ID, portKey)
 		return
 	}
-
 	address := fmt.Sprintf("%s:%s", host, port)
 	options := &pool.Options{
-		InitTargets:  []string{"127.0.0.1:8080"},
-		InitCap:      5,
-		MaxCap:       30,
+		InitTargets:  []string{address},
+		InitCap:      32,
+		MaxCap:       64,
 		DialTimeout:  time.Second * 5,
-		IdleTimeout:  time.Second * 60,
+		IdleTimeout:  time.Second * 120,
 		ReadTimeout:  time.Second * 5,
 		WriteTimeout: time.Second * 5,
 	}
@@ -273,14 +272,17 @@ func (gs *GRPCClient) AddServer(sv *Server) {
 		}
 	}
 	gs.clientMap.Store(sv.ID, client)
+	fmt.Println("AddServer",sv.Type)
+
 	logger.Log.Debugf("[grpc client] added server %s at %s", sv.ID, address)
 }
 
 // RemoveServer is called when a server is removed
 func (gs *GRPCClient) RemoveServer(sv *Server) {
 	if c, ok := gs.clientMap.Load(sv.ID); ok {
-		c.(*grpcClient).disconnect()
 		gs.clientMap.Delete(sv.ID)
+		fmt.Println("RemoveServer",sv.Type)
+		c.(*grpcClient).disconnect()
 		logger.Log.Debugf("[grpc client] removed server %s", sv.ID)
 	}
 }
@@ -358,8 +360,9 @@ func (gc *grpcClient) disconnect() {
 	gc.lock.Lock()
 	if gc.connected {
 		//gc.conn.Close(
-		gc.cliPool.Close()
 		gc.connected = false
+		gc.cliPool.Close()
+		fmt.Println("disconnectdisconnect")
 	}
 	gc.lock.Unlock()
 }
@@ -376,6 +379,7 @@ func (gc *grpcClient) pushToUser(ctx context.Context, push *protos.Push) error {
 		return err
 	}
 	_, err = protos.NewPitayaClient(cli).PushToUser(ctx, push)
+	gc.cliPool.Put(cli)
 	return err
 }
 
@@ -389,7 +393,9 @@ func (gc *grpcClient) call(ctx context.Context, req *protos.Request) (*protos.Re
 	if err != nil{
 		return nil, err
 	}
-	return protos.NewPitayaClient(cli).Call(ctx, req)
+	resp, err := protos.NewPitayaClient(cli).Call(ctx, req)
+	gc.cliPool.Put(cli)
+	return resp, err
 	//return gc.cli.Call(ctx, req)
 }
 
@@ -405,6 +411,7 @@ func (gc *grpcClient) sessionBindRemote(ctx context.Context, req *protos.BindMsg
 		return err
 	}
 	_, err =protos.NewPitayaClient(cli).SessionBindRemote(ctx, req)
+	gc.cliPool.Put(cli)
 	//_, err := gc.cli.SessionBindRemote(ctx, req)
 	return err
 }
@@ -421,6 +428,7 @@ func (gc *grpcClient) sendKick(ctx context.Context, req *protos.KickMsg) error {
 		return err
 	}
 	_, err = protos.NewPitayaClient(cli).KickUser(ctx, req)
+	gc.cliPool.Put(cli)
 	//_, err := gc.cli.KickUser(ctx, req)
 	return err
 }

@@ -51,7 +51,9 @@ func castValueToCarrier(val interface{}) (opentracing.TextMapCarrier, error) {
 // The span context can be received directly (inside the context) or via an RPC call
 // (encoded in binary format)
 func ExtractSpan(ctx context.Context) (opentracing.SpanContext, error) {
+	//@zx change @20210702
 	var spanCtx opentracing.SpanContext
+	return spanCtx, nil
 	span := opentracing.SpanFromContext(ctx)
 	if span == nil {
 		if s := pcontext.GetFromPropagateCtx(ctx, constants.SpanPropagateCtxKey); s != nil {
