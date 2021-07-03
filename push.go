@@ -48,7 +48,7 @@ func SendPushToUsers(route string, v interface{}, uids []string, frontendType st
 		if s := session.GetSessionByUID(uid); s != nil && app.server.Type == frontendType {
 			if err := s.Push(route, data); err != nil {
 				notPushedUids = append(notPushedUids, uid)
-				logger.Log.Errorf("Session push message error, ID=%d, UID=%s, Error=%s",
+				logger.Log.Warnf("Session push message error, ID=%d, UID=%s, Error=%s",
 					s.ID(), s.UID(), err.Error())
 			}
 		} else if app.rpcClient != nil {
@@ -59,7 +59,7 @@ func SendPushToUsers(route string, v interface{}, uids []string, frontendType st
 			}
 			if err = app.rpcClient.SendPush(uid, &cluster.Server{Type: frontendType}, push); err != nil {
 				notPushedUids = append(notPushedUids, uid)
-				logger.Log.Errorf("RPCClient send message error, UID=%s, SvType=%s, Error=%s", uid, frontendType, err.Error())
+				logger.Log.Warnf("RPCClient send message error, UID=%s, SvType=%s, Error=%s", uid, frontendType, err.Error())
 			}
 		} else {
 			notPushedUids = append(notPushedUids, uid)

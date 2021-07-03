@@ -260,7 +260,7 @@ func (gs *GRPCClient) AddServer(sv *Server) {
 		InitCap:      32,
 		MaxCap:       64,
 		DialTimeout:  time.Second * 5,
-		IdleTimeout:  time.Second * 120,
+		IdleTimeout:  time.Second * 3600,
 		ReadTimeout:  time.Second * 5,
 		WriteTimeout: time.Second * 5,
 	}
@@ -272,8 +272,6 @@ func (gs *GRPCClient) AddServer(sv *Server) {
 		}
 	}
 	gs.clientMap.Store(sv.ID, client)
-	fmt.Println("AddServer",sv.Type)
-
 	logger.Log.Debugf("[grpc client] added server %s at %s", sv.ID, address)
 }
 
@@ -281,7 +279,6 @@ func (gs *GRPCClient) AddServer(sv *Server) {
 func (gs *GRPCClient) RemoveServer(sv *Server) {
 	if c, ok := gs.clientMap.Load(sv.ID); ok {
 		gs.clientMap.Delete(sv.ID)
-		fmt.Println("RemoveServer",sv.Type)
 		c.(*grpcClient).disconnect()
 		logger.Log.Debugf("[grpc client] removed server %s", sv.ID)
 	}
@@ -362,7 +359,6 @@ func (gc *grpcClient) disconnect() {
 		//gc.conn.Close(
 		gc.connected = false
 		gc.cliPool.Close()
-		fmt.Println("disconnectdisconnect")
 	}
 	gc.lock.Unlock()
 }

@@ -126,3 +126,10 @@ func getTags(ctx context.Context, tags map[string]string) map[string]string {
 
 	return tags
 }
+
+// ReportGauge reports the number of
+func ReportGauge(reporters []Reporter, name string, number int) {
+	for _, r := range reporters {
+		r.ReportGauge(name, map[string]string{}, float64(number))
+	}
+}
