@@ -80,6 +80,7 @@ type Client struct {
 	nextID              uint32
 	messageEncoder      message.Encoder
 	clientHandshakeData *session.HandshakeData
+	writeRW sync.RWMutex
 }
 
 // MsgChannel return the incoming message channel
@@ -146,7 +147,7 @@ func (c *Client) sendHandshakeRequest() error {
 		return err
 	}
 
-	_, err = c.conn.Write(p)
+	_, err = c.write(p)
 	return err
 }
 
@@ -184,7 +185,7 @@ func (c *Client) handleHandshakeResponse() error {
 	if err != nil {
 		return err
 	}
-	_, err = c.conn.Write(p)
+	_, err = c.write(p)
 	if err != nil {
 		return err
 	}
@@ -327,7 +328,7 @@ func (c *Client) sendHeartbeats(interval int) {
 		select {
 		case <-t.C:
 			p, _ := c.packetEncoder.Encode(packet.Heartbeat, []byte{})
-			_, err := c.conn.Write(p)
+			_, err := c.write(p)
 			if err != nil {
 				logger.Log.Errorf("error sending heartbeat to server: %s", err.Error())
 				return
@@ -466,6 +467,12 @@ func (c *Client) sendMsg(msgType message.Type, route string, data []byte) (uint,
 	if err != nil {
 		return m.ID, err
 	}
-	_, err = c.conn.Write(p)
+	_, err = c.write(p)
 	return m.ID, err
+}
+
+func (c *Client) write(p []byte) (n int, err error){
+	defer c.writeRW.Unlock()
+	c.writeRW.Lock()
+	return c.conn.Write(p)
 }
