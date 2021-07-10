@@ -494,6 +494,10 @@ func listen() {
 	app.running = true
 }
 
+func IsRuning() bool {
+	return app.running
+}
+
 // SetDictionary sets routes map
 func SetDictionary(dict map[string]uint16) error {
 	if app.running {
