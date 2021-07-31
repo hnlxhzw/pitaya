@@ -257,8 +257,8 @@ func (gs *GRPCClient) AddServer(sv *Server) {
 	address := fmt.Sprintf("%s:%s", host, port)
 	options := &pool.Options{
 		InitTargets:  []string{address},
-		InitCap:      32,
-		MaxCap:       64,
+		InitCap:      8,
+		MaxCap:       32,
 		DialTimeout:  time.Second * 5,
 		IdleTimeout:  time.Second * 3600,
 		ReadTimeout:  time.Second * 5,
@@ -375,7 +375,7 @@ func (gc *grpcClient) pushToUser(ctx context.Context, push *protos.Push) error {
 		return err
 	}
 	_, err = protos.NewPitayaClient(cli).PushToUser(ctx, push)
-	gc.cliPool.Put(cli)
+	gc.Put(cli)
 	return err
 }
 
@@ -390,7 +390,7 @@ func (gc *grpcClient) call(ctx context.Context, req *protos.Request) (*protos.Re
 		return nil, err
 	}
 	resp, err := protos.NewPitayaClient(cli).Call(ctx, req)
-	gc.cliPool.Put(cli)
+	gc.Put(cli)
 	return resp, err
 	//return gc.cli.Call(ctx, req)
 }
@@ -407,7 +407,7 @@ func (gc *grpcClient) sessionBindRemote(ctx context.Context, req *protos.BindMsg
 		return err
 	}
 	_, err =protos.NewPitayaClient(cli).SessionBindRemote(ctx, req)
-	gc.cliPool.Put(cli)
+	gc.Put(cli)
 	//_, err := gc.cli.SessionBindRemote(ctx, req)
 	return err
 }
@@ -424,7 +424,14 @@ func (gc *grpcClient) sendKick(ctx context.Context, req *protos.KickMsg) error {
 		return err
 	}
 	_, err = protos.NewPitayaClient(cli).KickUser(ctx, req)
-	gc.cliPool.Put(cli)
+	gc.Put(cli)
 	//_, err := gc.cli.KickUser(ctx, req)
 	return err
+}
+
+func (gc *grpcClient) Put(cli *grpc.ClientConn) error {
+	if gc.connected == false{
+		return nil
+	}
+	return gc.cliPool.Put(cli)
 }
