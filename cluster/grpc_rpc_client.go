@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/flyaways/pool"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/woshihaomei/pitaya/config"
 	"github.com/woshihaomei/pitaya/conn/message"
@@ -40,7 +41,6 @@ import (
 	"github.com/woshihaomei/pitaya/session"
 	"github.com/woshihaomei/pitaya/tracing"
 	"google.golang.org/grpc"
-	"github.com/flyaways/pool"
 )
 
 // GRPCClient rpc server struct
@@ -76,9 +76,9 @@ func NewGRPCClient(
 
 type grpcClient struct {
 	options *pool.Options //
-	address   string
+	address string
 	//cli       protos.PitayaClient
-	cliPool   *pool.GRPCPool
+	cliPool *pool.GRPCPool
 	//conn      *grpc.ClientConn
 	connected bool
 	lock      sync.Mutex
@@ -233,7 +233,6 @@ func (gs *GRPCClient) SendPush(userID string, frontendSv *Server, push *protos.P
 
 		err := c.(*grpcClient).pushToUser(ctxT, push)
 
-
 		return err
 	}
 	return constants.ErrNoConnectionToServer
@@ -341,7 +340,7 @@ func (gc *grpcClient) connect() error {
 	//c := protos.NewPitayaClient(conn)
 
 	p, err := pool.NewGRPCPool(gc.options, grpc.WithInsecure())
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
@@ -371,7 +370,7 @@ func (gc *grpcClient) pushToUser(ctx context.Context, push *protos.Push) error {
 	}
 	//_, err := gc.cli.PushToUser(ctx, push)
 	cli, err := gc.cliPool.Get()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	_, err = protos.NewPitayaClient(cli).PushToUser(ctx, push)
@@ -386,7 +385,7 @@ func (gc *grpcClient) call(ctx context.Context, req *protos.Request) (*protos.Re
 		}
 	}
 	cli, err := gc.cliPool.Get()
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	resp, err := protos.NewPitayaClient(cli).Call(ctx, req)
@@ -403,10 +402,10 @@ func (gc *grpcClient) sessionBindRemote(ctx context.Context, req *protos.BindMsg
 	}
 
 	cli, err := gc.cliPool.Get()
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	_, err =protos.NewPitayaClient(cli).SessionBindRemote(ctx, req)
+	_, err = protos.NewPitayaClient(cli).SessionBindRemote(ctx, req)
 	gc.Put(cli)
 	//_, err := gc.cli.SessionBindRemote(ctx, req)
 	return err
@@ -420,7 +419,7 @@ func (gc *grpcClient) sendKick(ctx context.Context, req *protos.KickMsg) error {
 	}
 
 	cli, err := gc.cliPool.Get()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	_, err = protos.NewPitayaClient(cli).KickUser(ctx, req)
@@ -430,7 +429,7 @@ func (gc *grpcClient) sendKick(ctx context.Context, req *protos.KickMsg) error {
 }
 
 func (gc *grpcClient) Put(cli *grpc.ClientConn) error {
-	if gc.connected == false{
+	if gc.connected == false {
 		return nil
 	}
 	return gc.cliPool.Put(cli)

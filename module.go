@@ -28,8 +28,8 @@ import (
 )
 
 var (
-	modulesMap = make(map[string]interfaces.Module)
-	modulesArr = []moduleWrapper{}
+	modulesMap         = make(map[string]interfaces.Module)
+	modulesArr         = []moduleWrapper{}
 	customerModulesArr = []moduleWrapper{} //add by shawn 用户自定义组件 加载流程 component > customerComp > module > customerModule 销毁流程 customerModule > module > component > customerComp
 )
 
@@ -74,6 +74,7 @@ func RegisterModuleBefore(module interfaces.Module, name string) error {
 
 	return nil
 }
+
 // RegisterCustomerModule 用户自动义模块
 func RegisterCustomerModule(module interfaces.Module, name string) error {
 	if err := alreadyRegistered(name); err != nil {
@@ -120,6 +121,7 @@ func startModules() {
 		logger.Log.Infof("module: %s successfully loaded", modWrapper.name)
 	}
 }
+
 // startCustomerModules add by shawn 启动所有自定义的模块
 func startCustomerModules() {
 	logger.Log.Debug("initializing all customer modules")
@@ -153,6 +155,7 @@ func shutdownModules() {
 		logger.Log.Infof("module: %s stopped!", name)
 	}
 }
+
 // shutdownCustomerModules add by shawn 关闭所有自定义的模块
 func shutdownCustomerModules() {
 	for i := len(customerModulesArr) - 1; i >= 0; i-- {

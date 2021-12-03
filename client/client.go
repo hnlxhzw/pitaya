@@ -26,12 +26,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/url"
 	"sync"
 	"sync/atomic"
 	"time"
-	"io"
 
 	"github.com/woshihaomei/pitaya/acceptor"
 
@@ -80,7 +80,7 @@ type Client struct {
 	nextID              uint32
 	messageEncoder      message.Encoder
 	clientHandshakeData *session.HandshakeData
-	writeRW sync.RWMutex
+	writeRW             sync.RWMutex
 }
 
 // MsgChannel return the incoming message channel
@@ -279,10 +279,10 @@ func (c *Client) readPackets(buf *bytes.Buffer) ([]*packet.Packet, error) {
 	//OuterLoop:
 	for {
 		n, err := c.conn.Read(data)
-		if err == io.EOF{
+		if err == io.EOF {
 			buf.Write(data[:n])
 			break
-		}else if err != nil {
+		} else if err != nil {
 			return nil, err
 		}
 
@@ -471,7 +471,7 @@ func (c *Client) sendMsg(msgType message.Type, route string, data []byte) (uint,
 	return m.ID, err
 }
 
-func (c *Client) write(p []byte) (n int, err error){
+func (c *Client) write(p []byte) (n int, err error) {
 	defer c.writeRW.Unlock()
 	c.writeRW.Lock()
 	return c.conn.Write(p)

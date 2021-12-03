@@ -16,7 +16,7 @@
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.  
+// SOFTWARE.
 
 package pitaya
 
@@ -87,6 +87,7 @@ type App struct {
 	rpcServer        cluster.RPCServer
 	metricsReporters []metrics.Reporter
 	running          bool
+	stopping         bool //关闭中
 	serializer       serialize.Serializer
 	server           *cluster.Server
 	serverMode       ServerMode
@@ -109,6 +110,7 @@ var (
 		serializer:       json.NewSerializer(),
 		configured:       false,
 		running:          false,
+		stopping:         false,
 		router:           router.New(),
 	}
 
@@ -441,6 +443,7 @@ func Start() {
 
 	logger.Log.Info("server is stopping...")
 
+	app.stopping = true
 	session.CloseAll()
 	shutdownCustomerModules()
 	shutdownModules()
@@ -496,6 +499,10 @@ func listen() {
 
 func IsRuning() bool {
 	return app.running
+}
+
+func IsStopping() bool {
+	return app.stopping
 }
 
 // SetDictionary sets routes map

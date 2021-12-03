@@ -26,8 +26,8 @@ import (
 )
 
 var (
-	handlerComp = make([]regComp, 0)
-	remoteComp  = make([]regComp, 0)
+	handlerComp  = make([]regComp, 0)
+	remoteComp   = make([]regComp, 0)
 	customerComp = make([]regComp, 0) //自定义的组件 change by shawn
 )
 

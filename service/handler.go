@@ -60,25 +60,25 @@ var (
 type (
 	// HandlerService service
 	HandlerService struct {
-		appDieChan         chan bool             // die channel app
+		appDieChan chan bool // die channel app
 		//chLocalProcess     chan unhandledMessage // channel of messages that will be processed locally
 		//chRemoteProcess    chan unhandledMessage // channel of messages that will be processed remotely
-		chLocalProcessMap     map[int]chan unhandledMessage // channel map of messages that will be processed locally 改成多个channel
-		chRemoteProcessMap    map[int]chan unhandledMessage // channel map of messages that will be processed remotely
-		localProcessBufferSize int
+		chLocalProcessMap       map[int]chan unhandledMessage // channel map of messages that will be processed locally 改成多个channel
+		chRemoteProcessMap      map[int]chan unhandledMessage // channel map of messages that will be processed remotely
+		localProcessBufferSize  int
 		remoteProcessBufferSize int
-		decoder            codec.PacketDecoder   // binary decoder
-		encoder            codec.PacketEncoder   // binary encoder
-		heartbeatTimeout   time.Duration
-		messagesBufferSize int
-		remoteService      *RemoteService
-		serializer         serialize.Serializer          // message serializer
-		server             *cluster.Server               // server obj
-		services           map[string]*component.Service // all registered service
-		messageEncoder     message.Encoder
-		metricsReporters   []metrics.Reporter
-		rw sync.RWMutex
-		dispatchNum int
+		decoder                 codec.PacketDecoder // binary decoder
+		encoder                 codec.PacketEncoder // binary encoder
+		heartbeatTimeout        time.Duration
+		messagesBufferSize      int
+		remoteService           *RemoteService
+		serializer              serialize.Serializer          // message serializer
+		server                  *cluster.Server               // server obj
+		services                map[string]*component.Service // all registered service
+		messageEncoder          message.Encoder
+		metricsReporters        []metrics.Reporter
+		rw                      sync.RWMutex
+		dispatchNum             int
 	}
 
 	unhandledMessage struct {
@@ -107,27 +107,27 @@ func NewHandlerService(
 ) *HandlerService {
 
 	h := &HandlerService{
-		services:           make(map[string]*component.Service),
+		services: make(map[string]*component.Service),
 		//chLocalProcess:     make(chan unhandledMessage, localProcessBufferSize),
 		//chRemoteProcess:    make(chan unhandledMessage, remoteProcessBufferSize),
 		//因为原来的有n个dispatch对应
 		// 一个channel读取数据 这样有可能会出现请求的先后顺序问题
 		//改成把每个dispatch进程都对应一个channel 每一个conn 对应的数据都会发到同一个channel中
-		chLocalProcessMap:    make(map[int]chan unhandledMessage, dispatchNum),
-		chRemoteProcessMap:    make(map[int]chan unhandledMessage, dispatchNum),
-		localProcessBufferSize: localProcessBufferSize,
+		chLocalProcessMap:       make(map[int]chan unhandledMessage, dispatchNum),
+		chRemoteProcessMap:      make(map[int]chan unhandledMessage, dispatchNum),
+		localProcessBufferSize:  localProcessBufferSize,
 		remoteProcessBufferSize: remoteProcessBufferSize,
-		decoder:            packetDecoder,
-		encoder:            packetEncoder,
-		messagesBufferSize: messagesBufferSize,
-		serializer:         serializer,
-		heartbeatTimeout:   heartbeatTime,
-		appDieChan:         dieChan,
-		server:             server,
-		remoteService:      remoteService,
-		messageEncoder:     messageEncoder,
-		metricsReporters:   metricsReporters,
-		dispatchNum: dispatchNum,
+		decoder:                 packetDecoder,
+		encoder:                 packetEncoder,
+		messagesBufferSize:      messagesBufferSize,
+		serializer:              serializer,
+		heartbeatTimeout:        heartbeatTime,
+		appDieChan:              dieChan,
+		server:                  server,
+		remoteService:           remoteService,
+		messageEncoder:          messageEncoder,
+		metricsReporters:        metricsReporters,
+		dispatchNum:             dispatchNum,
 	}
 
 	return h
@@ -161,11 +161,11 @@ func (h *HandlerService) Dispatch(thread int, wg *sync.WaitGroup) {
 	for {
 		// Calls to remote servers block calls to local server
 		select {
-		case lm := <- chLocalProcess:
+		case lm := <-chLocalProcess:
 			metrics.ReportMessageProcessDelayFromCtx(lm.ctx, h.metricsReporters, "local")
 			h.localProcess(lm.ctx, lm.agent, lm.route, lm.msg)
 
-		case rm := <- chRemoteProcess:
+		case rm := <-chRemoteProcess:
 			metrics.ReportMessageProcessDelayFromCtx(rm.ctx, h.metricsReporters, "remote")
 			h.remoteService.remoteProcess(rm.ctx, nil, rm.agent, rm.route, rm.msg)
 
@@ -220,7 +220,7 @@ func (h *HandlerService) Handle(conn acceptor.PlayerConn) {
 
 	for {
 		//change by shawn 状态为已关闭 就不需要再去读数据了
-		if a.GetStatus() == constants.StatusClosed{
+		if a.GetStatus() == constants.StatusClosed {
 			logger.Log.Debugf("Agent Close!!!!")
 			return
 		}
@@ -395,5 +395,5 @@ func (h *HandlerService) Docs(getPtrNames bool) (map[string]interface{}, error) 
 
 // 获取需要分配到的 dispatch id
 func (h *HandlerService) GetChProcessIndex(a *agent.Agent) int {
-	return int(a.Session.ID()%int64(h.dispatchNum))
+	return int(a.Session.ID() % int64(h.dispatchNum))
 }

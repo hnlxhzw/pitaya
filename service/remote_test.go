@@ -70,7 +70,7 @@ func (m *MyComp) RemoteErr(ctx context.Context) (*test.SomeStruct, error) {
 
 type unregisteredStruct struct{}
 
-func errorIs(t *testing.T, err1 error, err2 error)  {
+func errorIs(t *testing.T, err1 error, err2 error) {
 	if !assert.ObjectsAreEqual(err1, err2) && !errors.Is(err1, err2) {
 		assert.Fail(t, fmt.Sprintf("Error does not match target:\nactual: %s\nexpected: %s", err1, err2))
 	}
