@@ -143,9 +143,11 @@ func GetErrorPayload(serializer serialize.Serializer, err error) ([]byte, error)
 		code = val.Code
 		metadata = val.Metadata
 	}
-	errPayload := &protos.Error{
-		Code: code,
-		Msg:  msg,
+	eCode := e.ErrStrToInt32[code]
+	errPayload := &protos.ClientError{
+		ErrorCode: eCode,
+		Code:      code,
+		Msg:       msg,
 	}
 	if len(metadata) > 0 {
 		errPayload.Metadata = metadata
