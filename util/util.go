@@ -137,20 +137,12 @@ func GetErrorFromPayload(serializer serialize.Serializer, payload []byte) error 
 // GetErrorPayload creates and serializes an error payload
 func GetErrorPayload(serializer serialize.Serializer, err error) ([]byte, error) {
 	code := e.ErrUnknownCode
-	msg := err.Error()
-	metadata := map[string]string{}
 	if val, ok := err.(*e.Error); ok {
 		code = val.Code
-		metadata = val.Metadata
 	}
 	eCode := e.ErrStrToInt32[code]
 	errPayload := &protos.ClientError{
 		ErrorCode: eCode,
-		Code:      code,
-		Msg:       msg,
-	}
-	if len(metadata) > 0 {
-		errPayload.Metadata = metadata
 	}
 	return SerializeOrRaw(serializer, errPayload)
 }
