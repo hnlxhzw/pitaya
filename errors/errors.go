@@ -22,7 +22,7 @@ package errors
 
 // ErrUnknownCode is a string code representing an unknown error
 // This will be used when no error code is sent by the handler
-const ErrUnknownCode = "PIT-399"
+const ErrUnknownCode = "PIT-450"
 
 // ErrInternalCode is a string code representing an internal Pitaya error
 const ErrInternalCode = "PIT-500"
@@ -37,9 +37,9 @@ const ErrBadRequestCode = "PIT-400"
 const ErrClientClosedRequest = "PIT-499"
 
 var ErrStrToInt32 map[string]int32 = map[string]int32{
-	ErrUnknownCode:         399,
 	ErrBadRequestCode:      400,
 	ErrNotFoundCode:        404,
+	ErrUnknownCode:         450,
 	ErrClientClosedRequest: 499,
 	ErrInternalCode:        500,
 }
