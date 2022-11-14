@@ -60,6 +60,8 @@ func (c *Config) fillDefaultValues() {
 		"pitaya.cluster.rpc.client.grpc.dialtimeout":            "5s",
 		"pitaya.cluster.rpc.client.grpc.requesttimeout":         "5s",
 		"pitaya.cluster.rpc.client.grpc.lazyconnection":         false,
+		"pitaya.cluster.rpc.client.grpcpool.initcap":            2,
+		"pitaya.cluster.rpc.client.grpcpool.maxcap":             8,
 		"pitaya.cluster.rpc.client.nats.connect":                "nats://localhost:4222",
 		"pitaya.cluster.rpc.client.nats.connectiontimeout":      "2s",
 		"pitaya.cluster.rpc.client.nats.maxreconnectionretries": 15,

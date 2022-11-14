@@ -53,6 +53,8 @@ type GRPCClient struct {
 	metricsReporters []metrics.Reporter
 	reqTimeout       time.Duration
 	server           *Server
+	initCap          int
+	maxCap           int
 }
 
 // NewGRPCClient returns a new instance of GRPCClient
@@ -93,6 +95,8 @@ func (gs *GRPCClient) configure(cfg *config.Config) {
 	gs.dialTimeout = cfg.GetDuration("pitaya.cluster.rpc.client.grpc.dialtimeout")
 	gs.lazy = cfg.GetBool("pitaya.cluster.rpc.client.grpc.lazyconnection")
 	gs.reqTimeout = cfg.GetDuration("pitaya.cluster.rpc.client.grpc.requesttimeout")
+	gs.initCap = cfg.GetInt("pitaya.cluster.rpc.client.grpcpool.initcap")
+	gs.maxCap = cfg.GetInt("pitaya.cluster.rpc.client.grpcpool.maxcap")
 }
 
 // Call makes a RPC Call
@@ -256,8 +260,8 @@ func (gs *GRPCClient) AddServer(sv *Server) {
 	address := fmt.Sprintf("%s:%s", host, port)
 	options := &pool.Options{
 		InitTargets:  []string{address},
-		InitCap:      8,
-		MaxCap:       32,
+		InitCap:      gs.initCap,
+		MaxCap:       gs.maxCap,
 		DialTimeout:  time.Second * 5,
 		IdleTimeout:  time.Second * 3600,
 		ReadTimeout:  time.Second * 5,
