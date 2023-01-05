@@ -33,19 +33,19 @@ func resetPipelines() {
 	pipeline.AfterHandler.Handlers = make([]pipeline.AfterHandlerTempl, 0)
 }
 
-var myHandler = func(ctx context.Context, in interface{}) (context.Context, interface{}, error) {
+var myHandler = func(ctx context.Context, in interface{}) (context.Context, interface{}, error, int32) {
 	ctx = context.WithValue(ctx, "traceID", "123456")
-	return ctx, []byte("test"), nil
+	return ctx, []byte("test"), nil, 0
 }
 
-var myAfterHandler = func(ctx context.Context, out interface{}, err error) (interface{}, error) {
-	return []byte("test"), nil
+var myAfterHandler = func(ctx context.Context, out interface{}, err error) (interface{}, error, int32) {
+	return []byte("test"), nil, 0
 }
 
 func TestBeforeHandler(t *testing.T) {
 	resetPipelines()
 	BeforeHandler(myHandler)
-	ctx, r, err := pipeline.BeforeHandler.Handlers[0](context.Background(), nil)
+	ctx, r, err, _ := pipeline.BeforeHandler.Handlers[0](context.Background(), nil)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("test"), r)
 	assert.Equal(t, "123456", ctx.Value("traceID").(string))
@@ -54,7 +54,7 @@ func TestBeforeHandler(t *testing.T) {
 func TestAfterHandler(t *testing.T) {
 	resetPipelines()
 	AfterHandler(myAfterHandler)
-	r, err := pipeline.AfterHandler.Handlers[0](nil, nil, nil)
+	r, err, _ := pipeline.AfterHandler.Handlers[0](nil, nil, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("test"), r)
 }

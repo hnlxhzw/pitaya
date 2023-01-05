@@ -324,7 +324,7 @@ func (h *HandlerService) processMessage(a *agent.Agent, msg *message.Message) {
 	r, err := route.Decode(msg.Route)
 	if err != nil {
 		logger.Log.Errorf("Failed to decode route: %s", err.Error())
-		a.AnswerWithError(ctx, msg.ID, e.NewError(err, e.ErrBadRequestCode))
+		a.AnswerWithError(ctx, msg.ID, e.NewError(err, e.ErrBadRequestCode.Desc, e.ErrBadRequestCode.ErrorCode))
 		return
 	}
 

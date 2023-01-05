@@ -178,7 +178,7 @@ func (a *Agent) packetEncodeMessage(m *message.Message) ([]byte, error) {
 func (a *Agent) send(pendingMsg pendingMessage) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			err = errors.NewError(constants.ErrBrokenPipe, errors.ErrClientClosedRequest)
+			err = errors.NewError(constants.ErrBrokenPipe, errors.ErrClientClosedRequest.Desc, errors.ErrClientClosedRequest.ErrorCode)
 		}
 	}()
 	a.reportChannelSize()
@@ -214,7 +214,7 @@ func (a *Agent) send(pendingMsg pendingMessage) (err error) {
 // Push implementation for session.NetworkEntity interface
 func (a *Agent) Push(route string, v interface{}) error {
 	if a.GetStatus() == constants.StatusClosed {
-		return errors.NewError(constants.ErrBrokenPipe, errors.ErrClientClosedRequest)
+		return errors.NewError(constants.ErrBrokenPipe, errors.ErrClientClosedRequest.Desc, errors.ErrClientClosedRequest.ErrorCode)
 	}
 
 	switch d := v.(type) {
@@ -236,7 +236,7 @@ func (a *Agent) ResponseMID(ctx context.Context, mid uint, v interface{}, isErro
 		err = isError[0]
 	}
 	if a.GetStatus() == constants.StatusClosed {
-		return errors.NewError(constants.ErrBrokenPipe, errors.ErrClientClosedRequest)
+		return errors.NewError(constants.ErrBrokenPipe, errors.ErrClientClosedRequest.Desc, errors.ErrClientClosedRequest.ErrorCode)
 	}
 
 	if mid <= 0 {

@@ -32,6 +32,7 @@ func TestNewError(t *testing.T) {
 	t.Parallel()
 
 	const code = "code"
+	const errorCode = -1
 
 	type (
 		input struct {
@@ -65,7 +66,7 @@ func TestNewError(t *testing.T) {
 		},
 		{"pitaya_error",
 			input{
-				err:      NewError(errors.New(uuid.New().String()), code, map[string]string{"key1": "value1", "key2": "value2"}),
+				err:      NewError(errors.New(uuid.New().String()), code, errorCode, map[string]string{"key1": "value1", "key2": "value2"}),
 				code:     "another-code",
 				metadata: map[string]string{"key1": "new-value1", "key3": "value3"},
 			},
@@ -73,7 +74,7 @@ func TestNewError(t *testing.T) {
 		},
 		{"pitaya_error_nil_metadata",
 			input{
-				err:      NewError(errors.New(uuid.New().String()), code),
+				err:      NewError(errors.New(uuid.New().String()), code, errorCode),
 				code:     "another-code",
 				metadata: map[string]string{"key1": "value1", "key2": "value2"},
 			},
@@ -85,9 +86,9 @@ func TestNewError(t *testing.T) {
 		t.Run(table.name, func(t *testing.T) {
 			var err *Error
 			if table.input.metadata != nil {
-				err = NewError(table.input.err, table.input.code, table.input.metadata)
+				err = NewError(table.input.err, table.input.code, -1, table.input.metadata)
 			} else {
-				err = NewError(table.input.err, table.input.code)
+				err = NewError(table.input.err, table.input.code, -1)
 			}
 			assert.NotNil(t, err)
 			assert.Equal(t, table.input.err.Error(), err.Message)
@@ -101,7 +102,7 @@ func TestErrorError(t *testing.T) {
 	t.Parallel()
 
 	sourceErr := errors.New(uuid.New().String())
-	err := NewError(sourceErr, uuid.New().String())
+	err := NewError(sourceErr, uuid.New().String(), -1)
 
 	errStr := err.Error()
 	assert.Equal(t, sourceErr.Error(), errStr)
@@ -124,7 +125,7 @@ func TestCodeFromError(t *testing.T) {
 
 		"test_not_pitaya_error": {
 			err:  errTest,
-			code: ErrUnknownCode,
+			code: ErrUnknownCode.Desc,
 		},
 
 		"test_nil_pitaya_error": {
@@ -133,7 +134,7 @@ func TestCodeFromError(t *testing.T) {
 		},
 
 		"test_pitaya_error": {
-			err:  NewError(errTest, codeNotFound),
+			err:  NewError(errTest, codeNotFound, -1),
 			code: codeNotFound,
 		},
 	}

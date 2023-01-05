@@ -147,12 +147,13 @@ func (gs *GRPCClient) Call(
 	}
 	if res.Error != nil {
 		if res.Error.Code == "" {
-			res.Error.Code = pitErrors.ErrUnknownCode
+			res.Error.Code = pitErrors.ErrUnknownCode.Desc
 		}
 		err = &pitErrors.Error{
-			Code:     res.Error.Code,
-			Message:  res.Error.Msg,
-			Metadata: res.Error.Metadata,
+			Code:      res.Error.Code,
+			Message:   res.Error.Msg,
+			Metadata:  res.Error.Metadata,
+			ErrorCode: res.Error.ErrorCode,
 		}
 		return nil, err
 	}

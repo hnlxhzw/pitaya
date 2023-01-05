@@ -122,12 +122,12 @@ func FileExists(filename string) bool {
 
 // GetErrorFromPayload gets the error from payload
 func GetErrorFromPayload(serializer serialize.Serializer, payload []byte) error {
-	err := &e.Error{Code: e.ErrUnknownCode}
+	err := &e.Error{Code: e.ErrUnknownCode.Desc, ErrorCode: e.ErrUnknownCode.ErrorCode}
 	switch serializer.(type) {
 	case *json.Serializer:
 		_ = serializer.Unmarshal(payload, err)
 	case *protobuf.Serializer:
-		pErr := &protos.Error{Code: e.ErrUnknownCode}
+		pErr := &protos.Error{Code: e.ErrUnknownCode.Desc, ErrorCode: e.ErrUnknownCode.ErrorCode}
 		_ = serializer.Unmarshal(payload, pErr)
 		err = &e.Error{Code: pErr.Code, Message: pErr.Msg, Metadata: pErr.Metadata}
 	}
@@ -136,11 +136,10 @@ func GetErrorFromPayload(serializer serialize.Serializer, payload []byte) error 
 
 // GetErrorPayload creates and serializes an error payload
 func GetErrorPayload(serializer serialize.Serializer, err error) ([]byte, error) {
-	code := e.ErrUnknownCode
+	eCode := e.ErrUnknownCode.ErrorCode
 	if val, ok := err.(*e.Error); ok {
-		code = val.Code
+		eCode = val.ErrorCode
 	}
-	eCode := e.ErrStrToInt32[code]
 	errPayload := &protos.ClientError{
 		ErrorCode: eCode,
 	}

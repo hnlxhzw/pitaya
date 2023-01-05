@@ -96,29 +96,31 @@ func getMsgType(msgTypeIface interface{}) (message.Type, error) {
 	return msgType, nil
 }
 
-func executeBeforePipeline(ctx context.Context, data interface{}) (context.Context, interface{}, error) {
+func executeBeforePipeline(ctx context.Context, data interface{}) (context.Context, interface{}, error, int32) {
 	var err error
+	var errorCode int32
 	res := data
 	if len(pipeline.BeforeHandler.Handlers) > 0 {
 		for _, h := range pipeline.BeforeHandler.Handlers {
-			ctx, res, err = h(ctx, res)
+			ctx, res, err, errorCode = h(ctx, res)
 			if err != nil {
 				logger.Log.Debugf("pitaya/handler: broken pipeline: %s", err.Error())
-				return ctx, res, err
+				return ctx, res, err, errorCode
 			}
 		}
 	}
-	return ctx, res, nil
+	return ctx, res, nil, 0
 }
 
-func executeAfterPipeline(ctx context.Context, res interface{}, err error) (interface{}, error) {
+func executeAfterPipeline(ctx context.Context, res interface{}, err error) (interface{}, error, int32) {
+	var errorCode int32
 	ret := res
 	if len(pipeline.AfterHandler.Handlers) > 0 {
 		for _, h := range pipeline.AfterHandler.Handlers {
-			ret, err = h(ctx, ret, err)
+			ret, err, errorCode = h(ctx, ret, err)
 		}
 	}
-	return ret, err
+	return ret, err, errorCode
 }
 
 func serializeReturn(ser serialize.Serializer, ret interface{}) ([]byte, error) {
@@ -151,18 +153,18 @@ func processHandlerMessage(
 
 	h, err := getHandler(rt)
 	if err != nil {
-		return nil, e.NewError(err, e.ErrNotFoundCode)
+		return nil, e.NewError(err, e.ErrNotFoundCode.Desc, e.ErrNotFoundCode.ErrorCode)
 	}
 
 	msgType, err := getMsgType(msgTypeIface)
 	if err != nil {
-		return nil, e.NewError(err, e.ErrInternalCode)
+		return nil, e.NewError(err, e.ErrInternalCode.Desc, e.ErrInternalCode.ErrorCode)
 	}
 
 	logger := ctx.Value(constants.LoggerCtxKey).(logger.Logger)
 	exit, err := h.ValidateMessageType(msgType)
 	if err != nil && exit {
-		return nil, e.NewError(err, e.ErrBadRequestCode)
+		return nil, e.NewError(err, e.ErrBadRequestCode.Desc, e.ErrBadRequestCode.ErrorCode)
 	} else if err != nil {
 		logger.Warnf("invalid message type, error: %s", err.Error())
 	}
@@ -171,12 +173,12 @@ func processHandlerMessage(
 	// both handler and pipeline functions
 	arg, err := unmarshalHandlerArg(h, serializer, data)
 	if err != nil {
-		return nil, e.NewError(err, e.ErrBadRequestCode)
+		return nil, e.NewError(err, e.ErrBadRequestCode.Desc, e.ErrBadRequestCode.ErrorCode)
 	}
-
-	ctx, arg, err = executeBeforePipeline(ctx, arg)
+	var errorCode int32
+	ctx, arg, err, errorCode = executeBeforePipeline(ctx, arg)
 	if err != nil {
-		return nil, err
+		return nil, e.NewError(err, "BeforePipeline", errorCode)
 	}
 
 	args := []reflect.Value{h.Receiver, reflect.ValueOf(ctx)}
@@ -194,9 +196,9 @@ func processHandlerMessage(
 		resp = []byte("ack")
 	}
 
-	resp, err = executeAfterPipeline(ctx, resp, err)
+	resp, err, errorCode = executeAfterPipeline(ctx, resp, err)
 	if err != nil {
-		return nil, err
+		return nil, e.NewError(err, "AfterPipeline", errorCode)
 	}
 
 	//edit by shawn 这里有个逻辑 如果是notify 消息返回都是nil 那就没必要去做解析了

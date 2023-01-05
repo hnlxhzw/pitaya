@@ -150,7 +150,7 @@ func TestAgentSend(t *testing.T) {
 		err  error
 	}{
 		{"success", nil},
-		{"failure", e.NewError(constants.ErrBrokenPipe, e.ErrClientClosedRequest)},
+		{"failure", e.NewError(constants.ErrBrokenPipe, e.ErrClientClosedRequest.Desc, e.ErrClientClosedRequest.ErrorCode)},
 	}
 
 	for _, table := range tables {
@@ -235,8 +235,9 @@ func TestAgentSendSerializeErr(t *testing.T) {
 
 	expectedBT := []byte("bla")
 	mockSerializer.EXPECT().Marshal(&protos.Error{
-		Code: e.ErrUnknownCode,
-		Msg:  expectedErr.Error(),
+		Code:      e.ErrUnknownCode.Desc,
+		ErrorCode: e.ErrUnknownCode.ErrorCode,
+		Msg:       expectedErr.Error(),
 	}).Return(expectedBT, nil)
 	m := &message.Message{
 		Type:  expected.typ,
@@ -278,7 +279,7 @@ func TestAgentPushFailsIfClosedAgent(t *testing.T) {
 	assert.NotNil(t, ag)
 	ag.state = constants.StatusClosed
 	err := ag.Push("", nil)
-	assert.Equal(t, e.NewError(constants.ErrBrokenPipe, e.ErrClientClosedRequest), err)
+	assert.Equal(t, e.NewError(constants.ErrBrokenPipe, e.ErrClientClosedRequest.Desc, e.ErrClientClosedRequest.ErrorCode), err)
 }
 
 func TestAgentPushStruct(t *testing.T) {
@@ -345,7 +346,7 @@ func TestAgentPush(t *testing.T) {
 		err  error
 	}{
 		{"success_raw", []byte("ok"), nil},
-		{"failure", []byte("ok"), e.NewError(constants.ErrBrokenPipe, e.ErrClientClosedRequest)},
+		{"failure", []byte("ok"), e.NewError(constants.ErrBrokenPipe, e.ErrClientClosedRequest.Desc, e.ErrClientClosedRequest.ErrorCode)},
 	}
 
 	for _, table := range tables {
@@ -452,7 +453,7 @@ func TestAgentResponseMIDFailsIfClosedAgent(t *testing.T) {
 
 	ctx := getCtxWithRequestKeys()
 	err := ag.ResponseMID(ctx, 1, nil)
-	assert.Equal(t, e.NewError(constants.ErrBrokenPipe, e.ErrClientClosedRequest), err)
+	assert.Equal(t, e.NewError(constants.ErrBrokenPipe, e.ErrClientClosedRequest.Desc, e.ErrClientClosedRequest.ErrorCode), err)
 }
 
 func TestAgentResponseMID(t *testing.T) {
@@ -468,7 +469,7 @@ func TestAgentResponseMID(t *testing.T) {
 		{"success_struct", uint(rand.Int()), &someStruct{A: "ok"}, false, nil},
 		{"failure_empty_mid", 0, []byte("ok"), false, constants.ErrSessionOnNotify},
 		{"failure_send", uint(rand.Int()), []byte("ok"), false,
-			e.NewError(constants.ErrBrokenPipe, e.ErrClientClosedRequest)},
+			e.NewError(constants.ErrBrokenPipe, e.ErrClientClosedRequest.Desc, e.ErrClientClosedRequest.ErrorCode)},
 	}
 
 	for _, table := range tables {

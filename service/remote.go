@@ -133,8 +133,9 @@ func (r *RemoteService) Call(ctx context.Context, req *protos.Request) (*protos.
 	if err != nil {
 		res = &protos.Response{
 			Error: &protos.Error{
-				Code: e.ErrInternalCode,
-				Msg:  err.Error(),
+				Code:      e.ErrInternalCode.Desc,
+				ErrorCode: e.ErrInternalCode.ErrorCode,
+				Msg:       err.Error(),
 			},
 		}
 	} else {
@@ -272,8 +273,9 @@ func processRemoteMessage(ctx context.Context, req *protos.Request, r *RemoteSer
 	if err != nil {
 		response := &protos.Response{
 			Error: &protos.Error{
-				Code: e.ErrBadRequestCode,
-				Msg:  "cannot decode route",
+				Code:      e.ErrBadRequestCode.Desc,
+				ErrorCode: e.ErrBadRequestCode.ErrorCode,
+				Msg:       "cannot decode route",
 				Metadata: map[string]string{
 					"route": req.GetMsg().GetRoute(),
 				},
@@ -290,8 +292,9 @@ func processRemoteMessage(ctx context.Context, req *protos.Request, r *RemoteSer
 	default:
 		return &protos.Response{
 			Error: &protos.Error{
-				Code: e.ErrBadRequestCode,
-				Msg:  "invalid rpc type",
+				Code:      e.ErrBadRequestCode.Desc,
+				ErrorCode: e.ErrBadRequestCode.ErrorCode,
+				Msg:       "invalid rpc type",
 				Metadata: map[string]string{
 					"route": req.GetMsg().GetRoute(),
 				},
@@ -308,8 +311,9 @@ func (r *RemoteService) handleRPCUser(ctx context.Context, req *protos.Request, 
 		logger.Log.Warnf("pitaya/remote: %s not found", rt.Short())
 		response := &protos.Response{
 			Error: &protos.Error{
-				Code: e.ErrNotFoundCode,
-				Msg:  "route not found",
+				Code:      e.ErrNotFoundCode.Desc,
+				ErrorCode: e.ErrNotFoundCode.ErrorCode,
+				Msg:       "route not found",
 				Metadata: map[string]string{
 					"route": rt.Short(),
 				},
@@ -323,8 +327,9 @@ func (r *RemoteService) handleRPCUser(ctx context.Context, req *protos.Request, 
 		if err != nil {
 			response := &protos.Response{
 				Error: &protos.Error{
-					Code: e.ErrBadRequestCode,
-					Msg:  err.Error(),
+					Code:      e.ErrBadRequestCode.Desc,
+					ErrorCode: e.ErrBadRequestCode.ErrorCode,
+					Msg:       err.Error(),
 				},
 			}
 			return response
@@ -336,8 +341,9 @@ func (r *RemoteService) handleRPCUser(ctx context.Context, req *protos.Request, 
 	if err != nil {
 		response := &protos.Response{
 			Error: &protos.Error{
-				Code: e.ErrUnknownCode,
-				Msg:  err.Error(),
+				Code:      e.ErrUnknownCode.Desc,
+				ErrorCode: e.ErrUnknownCode.ErrorCode,
+				Msg:       err.Error(),
 			},
 		}
 		if val, ok := err.(*e.Error); ok {
@@ -355,8 +361,9 @@ func (r *RemoteService) handleRPCUser(ctx context.Context, req *protos.Request, 
 		if !ok {
 			response := &protos.Response{
 				Error: &protos.Error{
-					Code: e.ErrUnknownCode,
-					Msg:  constants.ErrWrongValueType.Error(),
+					Code:      e.ErrUnknownCode.Desc,
+					ErrorCode: e.ErrUnknownCode.ErrorCode,
+					Msg:       constants.ErrWrongValueType.Error(),
 				},
 			}
 			return response
@@ -364,8 +371,9 @@ func (r *RemoteService) handleRPCUser(ctx context.Context, req *protos.Request, 
 		if b, err = proto.Marshal(pb); err != nil {
 			response := &protos.Response{
 				Error: &protos.Error{
-					Code: e.ErrUnknownCode,
-					Msg:  err.Error(),
+					Code:      e.ErrUnknownCode.Desc,
+					ErrorCode: e.ErrUnknownCode.ErrorCode,
+					Msg:       err.Error(),
 				},
 			}
 			return response
@@ -394,8 +402,9 @@ func (r *RemoteService) handleRPCSys(ctx context.Context, req *protos.Request, r
 		logger.Log.Warn("pitaya/handler: cannot instantiate remote agent")
 		response := &protos.Response{
 			Error: &protos.Error{
-				Code: e.ErrInternalCode,
-				Msg:  err.Error(),
+				Code:      e.ErrInternalCode.Desc,
+				ErrorCode: e.ErrInternalCode.ErrorCode,
+				Msg:       err.Error(),
 			},
 		}
 		return response
@@ -406,8 +415,9 @@ func (r *RemoteService) handleRPCSys(ctx context.Context, req *protos.Request, r
 		logger.Log.Warnf(err.Error())
 		response = &protos.Response{
 			Error: &protos.Error{
-				Code: e.ErrUnknownCode,
-				Msg:  err.Error(),
+				Code:      e.ErrUnknownCode.Desc,
+				ErrorCode: e.ErrUnknownCode.ErrorCode,
+				Msg:       err.Error(),
 			},
 		}
 		if val, ok := err.(*e.Error); ok {
@@ -438,7 +448,7 @@ func (r *RemoteService) remoteCall(
 	if target == nil {
 		target, err = r.router.Route(ctx, rpcType, svType, route, msg)
 		if err != nil {
-			return nil, e.NewError(err, e.ErrInternalCode)
+			return nil, e.NewError(err, e.ErrInternalCode.Desc, e.ErrInternalCode.ErrorCode)
 		}
 	}
 
@@ -448,6 +458,7 @@ func (r *RemoteService) remoteCall(
 			return nil, e.NewError(
 				fmt.Errorf("error making call to target with id %s and host %s: %s", target.ID, target.Hostname, err.Message),
 				err.Code,
+				err.ErrorCode,
 				err.Metadata,
 			)
 		}

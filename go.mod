@@ -67,6 +67,7 @@ require (
 	github.com/xiang90/probing v0.0.0-20160813154853-07dd2e8dfe18 // indirect
 	go.uber.org/atomic v1.3.2 // indirect
 	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
+	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20180314180208-26559e0f760e // indirect
 	google.golang.org/grpc v1.27.0
 	google.golang.org/protobuf v1.23.0

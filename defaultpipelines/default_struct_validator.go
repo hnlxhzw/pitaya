@@ -18,17 +18,17 @@ type DefaultValidator struct {
 // based on the struct tags the parameter has.
 // This function has the pipeline.Handler signature so
 // it is possible to use it as a pipeline function
-func (v *DefaultValidator) Validate(ctx context.Context, in interface{}) (context.Context, interface{}, error) {
+func (v *DefaultValidator) Validate(ctx context.Context, in interface{}) (context.Context, interface{}, error, int32) {
 	if in == nil {
-		return ctx, in, nil
+		return ctx, in, nil, 0
 	}
 
 	v.lazyinit()
 	if err := v.validate.Struct(in); err != nil {
-		return ctx, nil, err
+		return ctx, nil, err, 0
 	}
 
-	return ctx, in, nil
+	return ctx, in, nil, 0
 }
 
 func (v *DefaultValidator) lazyinit() {

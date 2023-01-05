@@ -540,7 +540,7 @@ func Shutdown() {
 
 // Error creates a new error with a code, message and metadata
 func Error(err error, code string, metadata ...map[string]string) *errors.Error {
-	return errors.NewError(err, code, metadata...)
+	return errors.NewError(err, code, -1, metadata...)
 }
 
 // GetSessionFromCtx retrieves a session from a given context

@@ -20,39 +20,52 @@
 
 package errors
 
+type S_Code struct {
+	Desc      string
+	ErrorCode int32
+}
+
 // ErrUnknownCode is a string code representing an unknown error
 // This will be used when no error code is sent by the handler
-const ErrUnknownCode = "PIT-450"
+var ErrUnknownCode = S_Code{
+	Desc:      "PIT-450",
+	ErrorCode: 450,
+}
 
 // ErrInternalCode is a string code representing an internal Pitaya error
-const ErrInternalCode = "PIT-500"
+var ErrInternalCode = S_Code{
+	Desc:      "PIT-500",
+	ErrorCode: 500,
+}
 
 // ErrNotFoundCode is a string code representing a not found related error
-const ErrNotFoundCode = "PIT-404"
+var ErrNotFoundCode = S_Code{
+	Desc:      "PIT-404",
+	ErrorCode: 404,
+}
 
 // ErrBadRequestCode is a string code representing a bad request related error
-const ErrBadRequestCode = "PIT-400"
+var ErrBadRequestCode = S_Code{
+	Desc:      "PIT-400",
+	ErrorCode: 400,
+}
 
 // ErrClientClosedRequest is a string code representing the client closed request error
-const ErrClientClosedRequest = "PIT-499"
-
-var ErrStrToInt32 map[string]int32 = map[string]int32{
-	ErrBadRequestCode:      400,
-	ErrNotFoundCode:        404,
-	ErrUnknownCode:         450,
-	ErrClientClosedRequest: 499,
-	ErrInternalCode:        500,
+var ErrClientClosedRequest = S_Code{
+	Desc:      "PIT-499",
+	ErrorCode: 499,
 }
 
 // Error is an error with a code, message and metadata
 type Error struct {
-	Code     string
-	Message  string
-	Metadata map[string]string
+	Code      string
+	Message   string
+	Metadata  map[string]string
+	ErrorCode int32
 }
 
 //NewError ctor
-func NewError(err error, code string, metadata ...map[string]string) *Error {
+func NewError(err error, code string, errorCode int32, metadata ...map[string]string) *Error {
 	if pitayaErr, ok := err.(*Error); ok {
 		if len(metadata) > 0 {
 			mergeMetadatas(pitayaErr, metadata[0])
@@ -61,8 +74,9 @@ func NewError(err error, code string, metadata ...map[string]string) *Error {
 	}
 
 	e := &Error{
-		Code:    code,
-		Message: err.Error(),
+		Code:      code,
+		Message:   err.Error(),
+		ErrorCode: errorCode,
 	}
 	if len(metadata) > 0 {
 		e.Metadata = metadata[0]
@@ -96,7 +110,7 @@ func CodeFromError(err error) string {
 
 	pitayaErr, ok := err.(*Error)
 	if !ok {
-		return ErrUnknownCode
+		return ErrUnknownCode.Desc
 	}
 
 	if pitayaErr == nil {
