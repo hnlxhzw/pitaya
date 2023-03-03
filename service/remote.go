@@ -118,6 +118,17 @@ func (r *RemoteService) remoteProcess(
 	}
 }
 
+func (r *RemoteService) remoteProcessForHttp(
+	ctx context.Context,
+	server *cluster.Server,
+	a *agent.Agent,
+	route *route.Route,
+	msg *message.Message,
+) (*protos.Response, error) {
+	res, err := r.remoteCall(ctx, server, protos.RPCType_Sys, route, a.Session, msg)
+	return res, err
+}
+
 // AddRemoteBindingListener adds a listener
 func (r *RemoteService) AddRemoteBindingListener(bindingListener cluster.RemoteBindingListener) {
 	r.remoteBindingListeners = append(r.remoteBindingListeners, bindingListener)
@@ -422,6 +433,7 @@ func (r *RemoteService) handleRPCSys(ctx context.Context, req *protos.Request, r
 		}
 		if val, ok := err.(*e.Error); ok {
 			response.Error.Code = val.Code
+			response.Error.ErrorCode = val.ErrorCode
 			if val.Metadata != nil {
 				response.Error.Metadata = val.Metadata
 			}

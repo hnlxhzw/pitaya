@@ -146,6 +146,15 @@ func GetErrorPayload(serializer serialize.Serializer, err error) ([]byte, error)
 	return SerializeOrRaw(serializer, errPayload)
 }
 
+// GetErrorCode 获取错误码。【非业务层出现的错误。是通过error返回】
+func GetErrorCode(err error) int32 {
+	eCode := e.ErrUnknownCode.ErrorCode
+	if val, ok := err.(*e.Error); ok {
+		eCode = val.ErrorCode
+	}
+	return eCode
+}
+
 // ConvertProtoToMessageType converts a protos.MsgType to a message.Type
 func ConvertProtoToMessageType(protoMsgType protos.MsgType) message.Type {
 	var msgType message.Type

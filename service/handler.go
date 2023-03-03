@@ -45,6 +45,7 @@ import (
 	e "github.com/woshihaomei/pitaya/errors"
 	"github.com/woshihaomei/pitaya/logger"
 	"github.com/woshihaomei/pitaya/metrics"
+	"github.com/woshihaomei/pitaya/protos"
 	"github.com/woshihaomei/pitaya/route"
 	"github.com/woshihaomei/pitaya/serialize"
 	"github.com/woshihaomei/pitaya/session"
@@ -349,6 +350,47 @@ func (h *HandlerService) processMessage(a *agent.Agent, msg *message.Message) {
 			logger.Log.Warnf("request made to another server type but no remoteService running")
 		}
 	}
+}
+
+func (h *HandlerService) ProcessMessageForHttp(routeStr string, data []byte) (*protos.Response, error) {
+	msg := message.New()
+	msg.Type = message.Request
+	msg.Route = routeStr
+	msg.Data = data
+	agentForHttp := agent.NewAgentForHttp()
+	requestID := uuid.New()
+	ctx := pcontext.AddToPropagateCtx(context.Background(), constants.StartTimeKey, time.Now().UnixNano())
+	ctx = pcontext.AddToPropagateCtx(ctx, constants.RouteKey, msg.Route)
+	ctx = pcontext.AddToPropagateCtx(ctx, constants.RequestIDKey, requestID.String())
+	tags := opentracing.Tags{
+		"local.id":   h.server.ID,
+		"span.kind":  "server",
+		"msg.type":   strings.ToLower(msg.Type.String()),
+		"user.id":    agentForHttp.Session.UID(),
+		"request.id": requestID.String(),
+	}
+	ctx = tracing.StartSpan(ctx, msg.Route, tags)
+	ctx = context.WithValue(ctx, constants.SessionCtxKey, agentForHttp.Session)
+
+	r, err := route.Decode(msg.Route)
+	if err != nil {
+		logger.Log.Errorf("Failed to decode route: %s", err.Error())
+		return nil, err
+	}
+
+	if r.SvType == "" {
+		r.SvType = h.server.Type
+	}
+
+	rm := unhandledMessage{
+		ctx:   ctx,
+		agent: agentForHttp,
+		route: r,
+		msg:   msg,
+	}
+
+	metrics.ReportMessageProcessDelayFromCtx(rm.ctx, h.metricsReporters, "remote")
+	return h.remoteService.remoteProcessForHttp(rm.ctx, nil, rm.agent, rm.route, rm.msg)
 }
 
 func (h *HandlerService) localProcess(ctx context.Context, a *agent.Agent, route *route.Route, msg *message.Message) {

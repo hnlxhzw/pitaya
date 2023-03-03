@@ -22,12 +22,12 @@ package pitaya
 
 import (
 	"context"
-	"reflect"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/woshihaomei/pitaya/constants"
+	"github.com/woshihaomei/pitaya/protos"
 	"github.com/woshihaomei/pitaya/route"
 	"github.com/woshihaomei/pitaya/worker"
+	"reflect"
 )
 
 // RPC calls a method in a different server
@@ -38,6 +38,19 @@ func RPC(ctx context.Context, routeStr string, reply proto.Message, arg proto.Me
 // RPCTo send a rpc to a specific server
 func RPCTo(ctx context.Context, serverID, routeStr string, reply proto.Message, arg proto.Message) error {
 	return doSendRPC(ctx, serverID, routeStr, reply, arg)
+}
+
+// RPCForHttp 这个是开放给http监听的时候 可以调用hander的方法
+func RPCForHttp(routeStr string, arg proto.Message) (*protos.Response, error) {
+	var data []byte
+	var err error
+	if arg != nil {
+		data, err = proto.Marshal(arg)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return handlerService.ProcessMessageForHttp(routeStr, data)
 }
 
 // ReliableRPC enqueues RPC to worker so it's executed asynchronously

@@ -140,6 +140,14 @@ func NewAgent(
 	return a
 }
 
+// NewAgentForHttp create new agent instance
+func NewAgentForHttp() *Agent {
+	a := &Agent{}
+	s := session.New(a, false)
+	a.Session = s
+	return a
+}
+
 func (a *Agent) getMessageFromPendingMessage(pm pendingMessage) (*message.Message, error) {
 	payload, err := util.SerializeOrRaw(a.serializer, pm.payload)
 	if err != nil {

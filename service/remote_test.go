@@ -65,7 +65,7 @@ func (m *MyComp) RemoteRes(ctx context.Context, b *test.SomeStruct) (*test.SomeS
 }
 
 func (m *MyComp) RemoteErr(ctx context.Context) (*test.SomeStruct, error) {
-	return nil, e.NewError(errors.New("remote err"), e.ErrUnknownCode)
+	return nil, e.NewError(errors.New("remote err"), e.ErrUnknownCode.Desc, e.ErrUnknownCode.ErrorCode)
 }
 
 type unregisteredStruct struct{}
@@ -260,7 +260,7 @@ func TestRemoteServiceRemoteCall(t *testing.T) {
 		res    *protos.Response
 		err    error
 	}{
-		{"no_target_route_error", nil, nil, e.NewError(constants.ErrServiceDiscoveryNotInitialized, e.ErrInternalCode)},
+		{"no_target_route_error", nil, nil, e.NewError(constants.ErrServiceDiscoveryNotInitialized, e.ErrInternalCode.Desc, e.ErrInternalCode.ErrorCode)},
 		{"error", sv, nil, errors.New("ble")},
 		{"success", sv, &protos.Response{Data: []byte("ok")}, nil},
 	}
