@@ -25,7 +25,7 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"github.com/woshihaomei/pitaya/component"
+	"github.com/hnlxhzw/pitaya/component"
 )
 
 type MyComp struct {

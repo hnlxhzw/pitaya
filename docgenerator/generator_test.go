@@ -26,8 +26,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/protos/test"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/protos/test"
 )
 
 type MyComp struct {

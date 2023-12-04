@@ -21,8 +21,8 @@
 package modules
 
 import (
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 // APIDocsGen is a pitaya module that generates api docs for pitaya servers

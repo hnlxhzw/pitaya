@@ -30,10 +30,10 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/woshihaomei/pitaya/conn/message"
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/protos"
-	"github.com/woshihaomei/pitaya/serialize/mocks"
+	"github.com/hnlxhzw/pitaya/conn/message"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/protos"
+	"github.com/hnlxhzw/pitaya/serialize/mocks"
 )
 
 var update = flag.Bool("update", false, "update .golden files")

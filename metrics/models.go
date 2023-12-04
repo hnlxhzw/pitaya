@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/woshihaomei/pitaya/config"
+	"github.com/hnlxhzw/pitaya/config"
 )
 
 // Summary defines a summary metric

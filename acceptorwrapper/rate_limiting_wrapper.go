@@ -21,8 +21,8 @@
 package acceptorwrapper
 
 import (
-	"github.com/woshihaomei/pitaya/acceptor"
-	"github.com/woshihaomei/pitaya/config"
+	"github.com/hnlxhzw/pitaya/acceptor"
+	"github.com/hnlxhzw/pitaya/config"
 )
 
 // RateLimitingWrapper rate limits for each connection

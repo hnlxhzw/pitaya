@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 var (

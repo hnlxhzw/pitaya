@@ -23,8 +23,8 @@ package pitaya
 import (
 	"fmt"
 
-	"github.com/woshihaomei/pitaya/interfaces"
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/interfaces"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 var (

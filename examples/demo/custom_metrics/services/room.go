@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 
-	"github.com/woshihaomei/pitaya"
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/examples/demo/custom_metrics/messages"
+	"github.com/hnlxhzw/pitaya"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/examples/demo/custom_metrics/messages"
 )
 
 // Room server

@@ -24,7 +24,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 // Server struct

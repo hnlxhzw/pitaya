@@ -1,4 +1,4 @@
-module github.com/woshihaomei/pitaya
+module github.com/hnlxhzw/pitaya
 
 go 1.12
 

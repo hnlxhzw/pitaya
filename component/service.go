@@ -24,8 +24,8 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/woshihaomei/pitaya/conn/message"
-	"github.com/woshihaomei/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/conn/message"
+	"github.com/hnlxhzw/pitaya/constants"
 )
 
 type (

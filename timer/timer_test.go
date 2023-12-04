@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/woshihaomei/pitaya/helpers"
+	"github.com/hnlxhzw/pitaya/helpers"
 )
 
 type alwaysRunCondition struct{}

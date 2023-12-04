@@ -26,8 +26,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/route"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/route"
 )
 
 type docs struct {

@@ -6,7 +6,7 @@ package mocks
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	cluster "github.com/woshihaomei/pitaya/cluster"
+	cluster "github.com/hnlxhzw/pitaya/cluster"
 	reflect "reflect"
 )
 

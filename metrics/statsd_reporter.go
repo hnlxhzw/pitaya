@@ -25,8 +25,8 @@ import (
 	"strconv"
 
 	"github.com/DataDog/datadog-go/statsd"
-	"github.com/woshihaomei/pitaya/config"
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/config"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 // Client is the interface to required dogstatsd functions

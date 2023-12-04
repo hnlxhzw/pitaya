@@ -26,17 +26,17 @@ import (
 	"reflect"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/woshihaomei/pitaya/cluster"
-	"github.com/woshihaomei/pitaya/conn/codec"
-	"github.com/woshihaomei/pitaya/conn/message"
-	"github.com/woshihaomei/pitaya/conn/packet"
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/logger"
-	"github.com/woshihaomei/pitaya/protos"
-	"github.com/woshihaomei/pitaya/route"
-	"github.com/woshihaomei/pitaya/serialize"
-	"github.com/woshihaomei/pitaya/session"
-	"github.com/woshihaomei/pitaya/util"
+	"github.com/hnlxhzw/pitaya/cluster"
+	"github.com/hnlxhzw/pitaya/conn/codec"
+	"github.com/hnlxhzw/pitaya/conn/message"
+	"github.com/hnlxhzw/pitaya/conn/packet"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/protos"
+	"github.com/hnlxhzw/pitaya/route"
+	"github.com/hnlxhzw/pitaya/serialize"
+	"github.com/hnlxhzw/pitaya/session"
+	"github.com/hnlxhzw/pitaya/util"
 )
 
 // Remote corresponding to another server

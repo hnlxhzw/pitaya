@@ -7,11 +7,11 @@ package mocks
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	cluster "github.com/woshihaomei/pitaya/cluster"
-	message "github.com/woshihaomei/pitaya/conn/message"
-	protos "github.com/woshihaomei/pitaya/protos"
-	route "github.com/woshihaomei/pitaya/route"
-	session "github.com/woshihaomei/pitaya/session"
+	cluster "github.com/hnlxhzw/pitaya/cluster"
+	message "github.com/hnlxhzw/pitaya/conn/message"
+	protos "github.com/hnlxhzw/pitaya/protos"
+	route "github.com/hnlxhzw/pitaya/route"
+	session "github.com/hnlxhzw/pitaya/session"
 	reflect "reflect"
 )
 

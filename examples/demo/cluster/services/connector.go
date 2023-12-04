@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/woshihaomei/pitaya"
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/examples/demo/protos"
+	"github.com/hnlxhzw/pitaya"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/examples/demo/protos"
 )
 
 // ConnectorRemote is a remote that will receive rpc's

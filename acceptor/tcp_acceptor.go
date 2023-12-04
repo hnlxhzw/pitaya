@@ -26,9 +26,9 @@ import (
 	"io/ioutil"
 	"net"
 
-	"github.com/woshihaomei/pitaya/conn/codec"
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/conn/codec"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 // TCPAcceptor struct

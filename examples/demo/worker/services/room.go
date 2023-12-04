@@ -3,10 +3,10 @@ package services
 import (
 	"context"
 
-	"github.com/woshihaomei/pitaya"
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/examples/demo/worker/protos"
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/examples/demo/worker/protos"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 // Room server

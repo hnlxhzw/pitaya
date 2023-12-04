@@ -9,15 +9,15 @@ import (
 
 	"strings"
 
-	"github.com/woshihaomei/pitaya"
-	"github.com/woshihaomei/pitaya/acceptor"
-	"github.com/woshihaomei/pitaya/cluster"
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/examples/demo/cluster_grpc/services"
-	"github.com/woshihaomei/pitaya/modules"
-	"github.com/woshihaomei/pitaya/route"
-	"github.com/woshihaomei/pitaya/serialize/json"
+	"github.com/hnlxhzw/pitaya"
+	"github.com/hnlxhzw/pitaya/acceptor"
+	"github.com/hnlxhzw/pitaya/cluster"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/examples/demo/cluster_grpc/services"
+	"github.com/hnlxhzw/pitaya/modules"
+	"github.com/hnlxhzw/pitaya/route"
+	"github.com/hnlxhzw/pitaya/serialize/json"
 )
 
 func configureBackend() {

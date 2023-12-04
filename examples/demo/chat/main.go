@@ -11,14 +11,14 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
-	"github.com/woshihaomei/pitaya"
-	"github.com/woshihaomei/pitaya/acceptor"
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/config"
-	"github.com/woshihaomei/pitaya/groups"
-	"github.com/woshihaomei/pitaya/logger"
-	"github.com/woshihaomei/pitaya/serialize/json"
-	"github.com/woshihaomei/pitaya/timer"
+	"github.com/hnlxhzw/pitaya"
+	"github.com/hnlxhzw/pitaya/acceptor"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/config"
+	"github.com/hnlxhzw/pitaya/groups"
+	"github.com/hnlxhzw/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/serialize/json"
+	"github.com/hnlxhzw/pitaya/timer"
 )
 
 type (

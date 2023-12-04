@@ -21,7 +21,7 @@
 package acceptorwrapper
 
 import (
-	"github.com/woshihaomei/pitaya/acceptor"
+	"github.com/hnlxhzw/pitaya/acceptor"
 )
 
 // Wrapper has a method that receives an acceptor and the struct

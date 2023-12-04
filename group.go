@@ -25,9 +25,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/groups"
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/groups"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 // Group represents an agglomeration of UIDs which is used to manage

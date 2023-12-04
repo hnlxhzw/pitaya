@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/woshihaomei/pitaya/conn/packet"
+	"github.com/hnlxhzw/pitaya/conn/packet"
 )
 
 func helperConcatBytes(packetType packet.Type, length, data []byte) []byte {

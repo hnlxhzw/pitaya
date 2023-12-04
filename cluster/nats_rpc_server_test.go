@@ -31,13 +31,13 @@ import (
 	nats "github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/helpers"
-	"github.com/woshihaomei/pitaya/metrics"
-	metricsmocks "github.com/woshihaomei/pitaya/metrics/mocks"
-	"github.com/woshihaomei/pitaya/protos"
-	protosmocks "github.com/woshihaomei/pitaya/protos/mocks"
-	"github.com/woshihaomei/pitaya/session"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/helpers"
+	"github.com/hnlxhzw/pitaya/metrics"
+	metricsmocks "github.com/hnlxhzw/pitaya/metrics/mocks"
+	"github.com/hnlxhzw/pitaya/protos"
+	protosmocks "github.com/hnlxhzw/pitaya/protos/mocks"
+	"github.com/hnlxhzw/pitaya/session"
 )
 
 func TestNewNatsRPCServer(t *testing.T) {

@@ -6,10 +6,10 @@ import (
 	"fmt"
 
 	"github.com/spf13/viper"
-	"github.com/woshihaomei/pitaya"
-	"github.com/woshihaomei/pitaya/acceptor"
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/serialize/json"
+	"github.com/hnlxhzw/pitaya"
+	"github.com/hnlxhzw/pitaya/acceptor"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/serialize/json"
 )
 
 // MetagameServer ...

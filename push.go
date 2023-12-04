@@ -21,12 +21,12 @@
 package pitaya
 
 import (
-	"github.com/woshihaomei/pitaya/cluster"
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/logger"
-	"github.com/woshihaomei/pitaya/protos"
-	"github.com/woshihaomei/pitaya/session"
-	"github.com/woshihaomei/pitaya/util"
+	"github.com/hnlxhzw/pitaya/cluster"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/protos"
+	"github.com/hnlxhzw/pitaya/session"
+	"github.com/hnlxhzw/pitaya/util"
 )
 
 // SendPushToUsers sends a message to the given list of users

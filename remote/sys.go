@@ -23,10 +23,10 @@ package remote
 import (
 	"context"
 
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/protos"
-	"github.com/woshihaomei/pitaya/session"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/protos"
+	"github.com/hnlxhzw/pitaya/session"
 )
 
 // Sys contains logic for handling sys remotes

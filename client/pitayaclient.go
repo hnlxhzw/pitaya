@@ -23,8 +23,8 @@ package client
 import (
 	"crypto/tls"
 
-	"github.com/woshihaomei/pitaya/conn/message"
-	"github.com/woshihaomei/pitaya/session"
+	"github.com/hnlxhzw/pitaya/conn/message"
+	"github.com/hnlxhzw/pitaya/session"
 )
 
 // PitayaClient iface

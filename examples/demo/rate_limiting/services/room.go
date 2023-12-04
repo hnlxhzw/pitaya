@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	"github.com/woshihaomei/pitaya/component"
+	"github.com/hnlxhzw/pitaya/component"
 )
 
 // Room represents a component that contains a bundle of room related handler

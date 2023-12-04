@@ -1,6 +1,6 @@
 package cluster
 
-import "github.com/woshihaomei/pitaya/config"
+import "github.com/hnlxhzw/pitaya/config"
 
 // ConfigInfoRetriever gets cluster info from config
 // Implements InfoRetriever interface

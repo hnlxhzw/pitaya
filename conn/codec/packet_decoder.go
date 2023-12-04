@@ -20,7 +20,7 @@
 
 package codec
 
-import "github.com/woshihaomei/pitaya/conn/packet"
+import "github.com/hnlxhzw/pitaya/conn/packet"
 
 // PacketDecoder interface
 type PacketDecoder interface {

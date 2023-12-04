@@ -25,10 +25,10 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/errors"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/errors"
 
-	pcontext "github.com/woshihaomei/pitaya/context"
+	pcontext "github.com/hnlxhzw/pitaya/context"
 )
 
 // ReportTimingFromCtx reports the latency from the context

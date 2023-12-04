@@ -33,17 +33,17 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/woshihaomei/pitaya/acceptor"
+	"github.com/hnlxhzw/pitaya/acceptor"
 
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
-	"github.com/woshihaomei/pitaya"
-	"github.com/woshihaomei/pitaya/conn/codec"
-	"github.com/woshihaomei/pitaya/conn/message"
-	"github.com/woshihaomei/pitaya/conn/packet"
-	"github.com/woshihaomei/pitaya/logger"
-	"github.com/woshihaomei/pitaya/session"
-	"github.com/woshihaomei/pitaya/util/compression"
+	"github.com/hnlxhzw/pitaya"
+	"github.com/hnlxhzw/pitaya/conn/codec"
+	"github.com/hnlxhzw/pitaya/conn/message"
+	"github.com/hnlxhzw/pitaya/conn/packet"
+	"github.com/hnlxhzw/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/session"
+	"github.com/hnlxhzw/pitaya/util/compression"
 )
 
 // HandshakeSys struct

@@ -7,7 +7,7 @@ package mocks
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	protos "github.com/woshihaomei/pitaya/protos"
+	protos "github.com/hnlxhzw/pitaya/protos"
 	net "net"
 	reflect "reflect"
 )

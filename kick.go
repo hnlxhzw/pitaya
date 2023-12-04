@@ -23,10 +23,10 @@ package pitaya
 import (
 	"context"
 
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/logger"
-	"github.com/woshihaomei/pitaya/protos"
-	"github.com/woshihaomei/pitaya/session"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/protos"
+	"github.com/hnlxhzw/pitaya/session"
 )
 
 // SendKickToUsers sends kick to an user array

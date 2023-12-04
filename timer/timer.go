@@ -25,7 +25,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 var timerBacklog int

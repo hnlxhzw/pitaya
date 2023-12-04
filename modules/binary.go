@@ -26,8 +26,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 // Binary is a pitaya module that starts a binary as a child process and

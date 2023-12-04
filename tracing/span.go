@@ -24,9 +24,9 @@ import (
 	"context"
 
 	opentracing "github.com/opentracing/opentracing-go"
-	"github.com/woshihaomei/pitaya/constants"
-	pcontext "github.com/woshihaomei/pitaya/context"
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/constants"
+	pcontext "github.com/hnlxhzw/pitaya/context"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 func castValueToCarrier(val interface{}) (opentracing.TextMapCarrier, error) {

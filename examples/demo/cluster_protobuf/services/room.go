@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/woshihaomei/pitaya"
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/config"
-	"github.com/woshihaomei/pitaya/examples/demo/cluster_protobuf/protos"
-	"github.com/woshihaomei/pitaya/groups"
-	"github.com/woshihaomei/pitaya/timer"
+	"github.com/hnlxhzw/pitaya"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/config"
+	"github.com/hnlxhzw/pitaya/examples/demo/cluster_protobuf/protos"
+	"github.com/hnlxhzw/pitaya/groups"
+	"github.com/hnlxhzw/pitaya/timer"
 )
 
 type (

@@ -21,8 +21,8 @@
 package pitaya
 
 import (
-	"github.com/woshihaomei/pitaya/component"
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/component"
+	"github.com/hnlxhzw/pitaya/logger"
 )
 
 var (

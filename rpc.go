@@ -23,10 +23,10 @@ package pitaya
 import (
 	"context"
 	"github.com/golang/protobuf/proto"
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/protos"
-	"github.com/woshihaomei/pitaya/route"
-	"github.com/woshihaomei/pitaya/worker"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/protos"
+	"github.com/hnlxhzw/pitaya/route"
+	"github.com/hnlxhzw/pitaya/worker"
 	"reflect"
 )
 

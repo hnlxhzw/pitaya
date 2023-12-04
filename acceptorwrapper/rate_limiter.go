@@ -24,11 +24,11 @@ import (
 	"container/list"
 	"time"
 
-	"github.com/woshihaomei/pitaya"
-	"github.com/woshihaomei/pitaya/acceptor"
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/logger"
-	"github.com/woshihaomei/pitaya/metrics"
+	"github.com/hnlxhzw/pitaya"
+	"github.com/hnlxhzw/pitaya/acceptor"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/metrics"
 )
 
 // RateLimiter wraps net.Conn by applying rate limiting and return empty

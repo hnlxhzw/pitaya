@@ -29,14 +29,14 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	nats "github.com/nats-io/nats.go"
-	"github.com/woshihaomei/pitaya/config"
-	"github.com/woshihaomei/pitaya/constants"
-	e "github.com/woshihaomei/pitaya/errors"
-	"github.com/woshihaomei/pitaya/logger"
-	"github.com/woshihaomei/pitaya/metrics"
-	"github.com/woshihaomei/pitaya/protos"
-	"github.com/woshihaomei/pitaya/session"
-	"github.com/woshihaomei/pitaya/util"
+	"github.com/hnlxhzw/pitaya/config"
+	"github.com/hnlxhzw/pitaya/constants"
+	e "github.com/hnlxhzw/pitaya/errors"
+	"github.com/hnlxhzw/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/metrics"
+	"github.com/hnlxhzw/pitaya/protos"
+	"github.com/hnlxhzw/pitaya/session"
+	"github.com/hnlxhzw/pitaya/util"
 )
 
 // NatsRPCServer struct

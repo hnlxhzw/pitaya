@@ -10,7 +10,7 @@ import (
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
-	acceptor "github.com/woshihaomei/pitaya/acceptor"
+	acceptor "github.com/hnlxhzw/pitaya/acceptor"
 )
 
 // MockPlayerConn is a mock of PlayerConn interface

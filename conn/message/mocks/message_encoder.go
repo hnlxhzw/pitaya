@@ -6,7 +6,7 @@ package mocks
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	message "github.com/woshihaomei/pitaya/conn/message"
+	message "github.com/hnlxhzw/pitaya/conn/message"
 	reflect "reflect"
 )
 

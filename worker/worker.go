@@ -26,9 +26,9 @@ import (
 	"os"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/woshihaomei/pitaya/config"
-	"github.com/woshihaomei/pitaya/constants"
-	"github.com/woshihaomei/pitaya/logger"
+	"github.com/hnlxhzw/pitaya/config"
+	"github.com/hnlxhzw/pitaya/constants"
+	"github.com/hnlxhzw/pitaya/logger"
 
 	workers "github.com/topfreegames/go-workers"
 )

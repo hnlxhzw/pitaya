@@ -9,9 +9,9 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/woshihaomei/pitaya/helpers"
-	"github.com/woshihaomei/pitaya/metrics"
-	protosmocks "github.com/woshihaomei/pitaya/protos/mocks"
+	"github.com/hnlxhzw/pitaya/helpers"
+	"github.com/hnlxhzw/pitaya/metrics"
+	protosmocks "github.com/hnlxhzw/pitaya/protos/mocks"
 )
 
 func TestNewGRPCServer(t *testing.T) {

@@ -26,7 +26,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-	"github.com/woshihaomei/pitaya/client"
+	"github.com/hnlxhzw/pitaya/client"
 )
 
 var clients []*client.Client

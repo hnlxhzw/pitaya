@@ -23,7 +23,7 @@ package codec
 import (
 	"bytes"
 
-	"github.com/woshihaomei/pitaya/conn/packet"
+	"github.com/hnlxhzw/pitaya/conn/packet"
 )
 
 // PomeloPacketDecoder reads and decodes network data slice following pomelo's protocol
