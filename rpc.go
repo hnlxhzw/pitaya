@@ -40,6 +40,10 @@ func RPCTo(ctx context.Context, serverID, routeStr string, reply proto.Message, 
 	return doSendRPC(ctx, serverID, routeStr, reply, arg)
 }
 
+func RPCToTS(ctx context.Context, serverID, routeStr string, req interface{}, resp interface{}) error {
+	return doSendGRPC(ctx, serverID, routeStr, req, resp)
+}
+
 // RPCForHttp 这个是开放给http监听的时候 可以调用hander的方法
 func RPCForHttp(routeStr string, arg proto.Message) (*protos.Response, error) {
 	var data []byte
@@ -97,4 +101,20 @@ func doSendRPC(ctx context.Context, serverID, routeStr string, reply proto.Messa
 	}
 
 	return remoteService.RPC(ctx, serverID, r, reply, arg)
+}
+
+func doSendGRPC(ctx context.Context, serverID string, routeKey string, req interface{}, resp interface{}) error {
+	if app.rpcServer == nil {
+		return constants.ErrRPCServerNotInitialized
+	}
+
+	if reflect.TypeOf(req).Kind() != reflect.Ptr {
+		return constants.ErrReplyShouldBePtr
+	}
+
+	if ("fight" == app.server.Type && serverID == "") || serverID == app.server.ID {
+		return constants.ErrNonsenseRPC
+	}
+
+	return remoteService.DoGRPC(ctx, serverID, routeKey, req, resp)
 }
