@@ -138,9 +138,9 @@ func NewPitayaClient(cc grpc.ClientConnInterface) PitayaClient {
 func (c *pitayaClient) Call(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
 	routeKey := "/protos.Pitaya/Call"
-	tsRouteKey := pcontext.GetFromPropagateCtx(ctx, constants.TsRouteKey).(string)
-	if len(tsRouteKey) > 0 {
-		routeKey = tsRouteKey
+	tsRouteKey := pcontext.GetFromPropagateCtx(ctx, constants.TsRouteKey)
+	if tsRouteKey != nil {
+		routeKey = tsRouteKey.(string)
 	}
 	err := c.cc.Invoke(ctx, routeKey, in, out, opts...)
 	if err != nil {
