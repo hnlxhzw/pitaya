@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/flyaways/pool"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/hnlxhzw/pitaya/config"
 	"github.com/hnlxhzw/pitaya/conn/message"
 	"github.com/hnlxhzw/pitaya/constants"
@@ -40,6 +39,7 @@ import (
 	"github.com/hnlxhzw/pitaya/route"
 	"github.com/hnlxhzw/pitaya/session"
 	"github.com/hnlxhzw/pitaya/tracing"
+	opentracing "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 )
 
@@ -158,6 +158,42 @@ func (gs *GRPCClient) Call(
 		return nil, err
 	}
 	return res, nil
+}
+
+func (gs *GRPCClient) Call2(ctx context.Context, routeKey string, req interface{}, resp interface{}, server *Server) error {
+	c, ok := gs.clientMap.Load(server.ID)
+	if !ok {
+		return constants.ErrNoConnectionToServer
+	}
+
+	parent, err := tracing.ExtractSpan(ctx)
+	if err != nil {
+		logger.Log.Warnf("[grpc client] failed to retrieve parent span: %s", err.Error())
+	}
+	tags := opentracing.Tags{
+		"span.kind":       "client",
+		"local.id":        gs.server.ID,
+		"peer.serverType": server.Type,
+		"peer.id":         server.ID,
+	}
+	ctx = tracing.StartSpan(ctx, "RPC Call", tags, parent)
+	defer tracing.FinishSpan(ctx, err)
+
+	if err != nil {
+		return err
+	}
+
+	ctxT, done := context.WithTimeout(ctx, gs.reqTimeout)
+	defer done()
+
+	if gs.metricsReporters != nil {
+		startTime := time.Now()
+		ctxT = pcontext.AddToPropagateCtx(ctxT, constants.StartTimeKey, startTime.UnixNano())
+		ctxT = pcontext.AddToPropagateCtx(ctxT, constants.RouteKey, routeKey)
+		defer metrics.ReportTimingFromCtx(ctxT, gs.metricsReporters, "rpc", err)
+	}
+	err = c.(*grpcClient).call2(ctxT, routeKey, req, resp)
+	return err
 }
 
 // Send not implemented in grpc client
@@ -397,6 +433,21 @@ func (gc *grpcClient) call(ctx context.Context, req *protos.Request) (*protos.Re
 	gc.Put(cli)
 	return resp, err
 	//return gc.cli.Call(ctx, req)
+}
+
+func (gc *grpcClient) call2(ctx context.Context, routeKey string, req interface{}, resp interface{}) error {
+	if !gc.connected {
+		if err := gc.connect(); err != nil {
+			return err
+		}
+	}
+	cli, err := gc.cliPool.Get()
+	if err != nil {
+		return err
+	}
+	err = cli.Invoke(ctx, routeKey, req, resp)
+	gc.Put(cli)
+	return err
 }
 
 func (gc *grpcClient) sessionBindRemote(ctx context.Context, req *protos.BindMsg) error {

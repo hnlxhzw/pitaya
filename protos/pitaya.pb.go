@@ -9,8 +9,6 @@ package protos
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	"github.com/hnlxhzw/pitaya/constants"
-	pcontext "github.com/hnlxhzw/pitaya/context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -137,12 +135,7 @@ func NewPitayaClient(cc grpc.ClientConnInterface) PitayaClient {
 
 func (c *pitayaClient) Call(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	routeKey := "/protos.Pitaya/Call"
-	tsRouteKey := pcontext.GetFromPropagateCtx(ctx, constants.TsRouteKey)
-	if tsRouteKey != nil {
-		routeKey = tsRouteKey.(string)
-	}
-	err := c.cc.Invoke(ctx, routeKey, in, out, opts...)
+	err := c.cc.Invoke(ctx, "/protos.Pitaya/Call", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}

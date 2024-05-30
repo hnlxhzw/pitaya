@@ -224,6 +224,14 @@ func (r *RemoteService) DoRPC(ctx context.Context, serverID string, route *route
 	return r.remoteCall(ctx, target, protos.RPCType_User, route, nil, msg)
 }
 
+func (r *RemoteService) DoGRPC(ctx context.Context, serverID string, routeKey string, req interface{}, resp interface{}) error {
+	target, _ := r.serviceDiscovery.GetServer(serverID)
+	if serverID != "" && target == nil {
+		return constants.ErrServerNotFound
+	}
+	return r.rpcClient.(*cluster.GRPCClient).Call2(ctx, routeKey, req, resp, target)
+}
+
 // RPC makes rpcs
 func (r *RemoteService) RPC(ctx context.Context, serverID string, route *route.Route, reply proto.Message, arg proto.Message) error {
 	defer util.AutoRecover("RemoteService RPC")
