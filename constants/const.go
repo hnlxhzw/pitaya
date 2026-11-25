@@ -20,6 +20,13 @@
 
 package constants
 
+import "os"
+
+// EchoTrace enables per-request transport diagnostics for a controlled run.
+var EchoTrace = os.Getenv("ZT_ECHO_TRACE") == "1"
+
+const EchoMIDKey = "zt.echo.mid"
+
 const (
 	_ int32 = iota
 	// StatusStart status

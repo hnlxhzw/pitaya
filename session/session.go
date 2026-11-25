@@ -30,10 +30,10 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
-	nats "github.com/nats-io/nats.go"
 	"github.com/hnlxhzw/pitaya/constants"
 	"github.com/hnlxhzw/pitaya/logger"
 	"github.com/hnlxhzw/pitaya/protos"
+	nats "github.com/nats-io/nats.go"
 )
 
 // NetworkEntity represent low-level network instance
@@ -190,7 +190,7 @@ func OnSessionClose(f func(s *Session)) {
 
 // CloseAll calls Close on all sessions
 func CloseAll() {
-	logger.Log.Debugf("closing all sessions, %d sessions", SessionCount)
+	logger.Log.Debugf("closing all sessions, %d sessions", atomic.LoadInt64(&SessionCount))
 	sessionsByID.Range(func(_, value interface{}) bool {
 		s := value.(*Session)
 		s.Close()
@@ -207,6 +207,16 @@ func (s *Session) updateEncodedData() error {
 	}
 	s.encodedData = b
 	return nil
+}
+
+// TryPush enqueues on this exact frontend connection without waiting for capacity.
+func (s *Session) TryPush(route string, v interface{}) error {
+	if writer, ok := s.entity.(interface {
+		TryPush(string, interface{}) error
+	}); ok {
+		return writer.TryPush(route, v)
+	}
+	return constants.ErrBrokenPipe
 }
 
 // Push message to client
@@ -338,7 +348,7 @@ func (s *Session) OnClose(c func()) error {
 func (s *Session) Close() {
 	atomic.AddInt64(&SessionCount, -1)
 	sessionsByID.Delete(s.ID())
-	sessionsByUID.Delete(s.UID())
+	sessionsByUID.CompareAndDelete(s.UID(), s)
 	// TODO: this logic should be moved to nats rpc server
 	if s.IsFrontend && s.Subscriptions != nil && len(s.Subscriptions) > 0 {
 		// if the user is bound to an userid and nats rpc server is being used we need to unsubscribe

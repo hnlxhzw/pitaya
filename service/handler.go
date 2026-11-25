@@ -32,7 +32,6 @@ import (
 	"github.com/hnlxhzw/pitaya/acceptor"
 
 	"github.com/google/uuid"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/hnlxhzw/pitaya/agent"
 	"github.com/hnlxhzw/pitaya/cluster"
 	"github.com/hnlxhzw/pitaya/component"
@@ -51,6 +50,7 @@ import (
 	"github.com/hnlxhzw/pitaya/session"
 	"github.com/hnlxhzw/pitaya/timer"
 	"github.com/hnlxhzw/pitaya/tracing"
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 var (
@@ -312,6 +312,10 @@ func (h *HandlerService) processMessage(a *agent.Agent, msg *message.Message) {
 	ctx := pcontext.AddToPropagateCtx(context.Background(), constants.StartTimeKey, time.Now().UnixNano())
 	ctx = pcontext.AddToPropagateCtx(ctx, constants.RouteKey, msg.Route)
 	ctx = pcontext.AddToPropagateCtx(ctx, constants.RequestIDKey, requestID.String())
+	if constants.EchoTrace && msg.Route == "game.client.echo" {
+		ctx = pcontext.AddToPropagateCtx(ctx, constants.EchoMIDKey, fmt.Sprint(msg.ID))
+		logger.Log.Infof("echo_diag stage=connector_received account=%s sid=%d mid=%d trace=%s", a.Session.UID(), a.Session.ID(), msg.ID, requestID.String())
+	}
 	tags := opentracing.Tags{
 		"local.id":   h.server.ID,
 		"span.kind":  "server",

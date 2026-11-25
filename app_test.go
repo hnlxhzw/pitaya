@@ -27,15 +27,12 @@ import (
 	"net"
 	"os"
 	"reflect"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/coreos/etcd/integration"
 	"github.com/google/uuid"
-	opentracing "github.com/opentracing/opentracing-go"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
 	"github.com/hnlxhzw/pitaya/acceptor"
 	"github.com/hnlxhzw/pitaya/cluster"
 	"github.com/hnlxhzw/pitaya/conn/codec"
@@ -51,6 +48,10 @@ import (
 	"github.com/hnlxhzw/pitaya/serialize/json"
 	"github.com/hnlxhzw/pitaya/session"
 	"github.com/hnlxhzw/pitaya/timer"
+	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -123,7 +124,7 @@ func initApp() {
 		serverMode:    Standalone,
 		serializer:    json.NewSerializer(),
 		configured:    false,
-		running:       false,
+		running:       0,
 		router:        router.New(),
 	}
 }
@@ -295,7 +296,7 @@ func TestSetDictionary(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, dict, message.GetDictionary())
 
-	app.running = true
+	atomic.StoreUint32(&app.running, 1)
 	err = SetDictionary(dict)
 	assert.EqualError(t, constants.ErrChangeDictionaryWhileRunning, err.Error())
 }
@@ -315,7 +316,7 @@ func TestAddRoute(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	app.running = true
+	atomic.StoreUint32(&app.running, 1)
 	err = AddRoute("somesv", func(ctx context.Context, route *route.Route, payload []byte, servers map[string]*cluster.Server) (*cluster.Server, error) {
 		return nil, nil
 	})
@@ -386,7 +387,7 @@ func TestStartAndListenStandalone(t *testing.T) {
 		Start()
 	}()
 	helpers.ShouldEventuallyReturn(t, func() bool {
-		return app.running
+		return IsRuning()
 	}, true)
 
 	assert.NotNil(t, handlerService)
@@ -430,7 +431,7 @@ func TestStartAndListenCluster(t *testing.T) {
 		Start()
 	}()
 	helpers.ShouldEventuallyReturn(t, func() bool {
-		return app.running
+		return IsRuning()
 	}, true)
 
 	assert.NotNil(t, handlerService)

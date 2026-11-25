@@ -177,7 +177,13 @@ func (ns *NatsRPCClient) Call(
 			metrics.ReportTimingFromCtx(ctx, ns.metricsReporters, typ, err)
 		}()
 	}
-	m, err = ns.conn.Request(getChannel(server.Type, server.ID), marshalledData, ns.reqTimeout)
+	requestCtx, cancel := context.WithTimeout(ctx, ns.reqTimeout)
+	defer cancel()
+	m, err = ns.conn.RequestWithContext(requestCtx, getChannel(server.Type, server.ID), marshalledData)
+	if err == context.DeadlineExceeded && ctx.Err() == nil {
+		// Preserve the existing NATS timeout for the configured transport limit.
+		err = nats.ErrTimeout
+	}
 	if err != nil {
 		return nil, err
 	}

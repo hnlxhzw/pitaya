@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 
@@ -94,7 +95,16 @@ func (r *RemoteService) remoteProcess(
 	route *route.Route,
 	msg *message.Message,
 ) {
+	var rpcStart time.Time
+	if constants.EchoTrace && msg.Route == "game.client.echo" {
+		rpcStart = time.Now()
+		logger.Log.Infof("echo_diag stage=connector_rpc_start account=%s sid=%d mid=%d", a.Session.UID(), a.Session.ID(), msg.ID)
+	}
 	res, err := r.remoteCall(ctx, server, protos.RPCType_Sys, route, a.Session, msg)
+	if !rpcStart.IsZero() {
+		logger.Log.Infof("echo_diag stage=connector_rpc_return account=%s sid=%d mid=%d rpc_us=%d error=%t", a.Session.UID(), a.Session.ID(), msg.ID, time.Since(rpcStart).Microseconds(), err != nil)
+	}
+
 	switch msg.Type {
 	case message.Request:
 		if err != nil {
@@ -103,6 +113,9 @@ func (r *RemoteService) remoteProcess(
 			return
 		}
 		err := a.Session.ResponseMID(ctx, msg.ID, res.Data)
+		if !rpcStart.IsZero() {
+			logger.Log.Infof("echo_diag stage=connector_enqueue_return account=%s sid=%d mid=%d error=%t", a.Session.UID(), a.Session.ID(), msg.ID, err != nil)
+		}
 		if err != nil {
 			logger.Log.Errorf("Failed to respond to remote server: %s", err.Error())
 			a.AnswerWithError(ctx, msg.ID, err)

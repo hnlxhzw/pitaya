@@ -27,6 +27,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 
 	"time"
@@ -86,8 +87,8 @@ type App struct {
 	rpcClient        cluster.RPCClient
 	rpcServer        cluster.RPCServer
 	metricsReporters []metrics.Reporter
-	running          bool
-	stopping         bool //关闭中
+	running          uint32
+	stopping         uint32 //关闭中
 	serializer       serialize.Serializer
 	server           *cluster.Server
 	serverMode       ServerMode
@@ -109,8 +110,6 @@ var (
 		serverMode:       Standalone,
 		serializer:       json.NewSerializer(),
 		configured:       false,
-		running:          false,
-		stopping:         false,
 		router:           router.New(),
 	}
 
@@ -426,7 +425,7 @@ func Start() {
 
 	defer func() {
 		timer.GlobalTicker.Stop()
-		app.running = false
+		atomic.StoreUint32(&app.running, 0)
 	}()
 
 	sg := make(chan os.Signal)
@@ -443,7 +442,7 @@ func Start() {
 
 	logger.Log.Info("server is stopping...")
 
-	app.stopping = true
+	atomic.StoreUint32(&app.stopping, 1)
 	session.CloseAll()
 	shutdownCustomerModules()
 	shutdownModules()
@@ -494,20 +493,20 @@ func listen() {
 
 	logger.Log.Info("all modules started!")
 
-	app.running = true
+	atomic.StoreUint32(&app.running, 1)
 }
 
 func IsRuning() bool {
-	return app.running
+	return atomic.LoadUint32(&app.running) != 0
 }
 
 func IsStopping() bool {
-	return app.stopping
+	return atomic.LoadUint32(&app.stopping) != 0
 }
 
 // SetDictionary sets routes map
 func SetDictionary(dict map[string]uint16) error {
-	if app.running {
+	if IsRuning() {
 		return constants.ErrChangeDictionaryWhileRunning
 	}
 	return message.SetDictionary(dict)
@@ -519,7 +518,7 @@ func AddRoute(
 	routingFunction router.RoutingFunc,
 ) error {
 	if app.router != nil {
-		if app.running {
+		if IsRuning() {
 			return constants.ErrChangeRouteWhileRunning
 		}
 		app.router.AddRoute(serverType, routingFunction)

@@ -35,6 +35,7 @@ import (
 	"github.com/hnlxhzw/pitaya/conn/message"
 	"github.com/hnlxhzw/pitaya/conn/packet"
 	"github.com/hnlxhzw/pitaya/constants"
+	pcontext "github.com/hnlxhzw/pitaya/context"
 	"github.com/hnlxhzw/pitaya/errors"
 	"github.com/hnlxhzw/pitaya/logger"
 	"github.com/hnlxhzw/pitaya/metrics"
@@ -68,6 +69,7 @@ type (
 		chStopHeartbeat    chan struct{}     // stop heartbeats
 		chStopWrite        chan struct{}     // stop writing messages
 		closeMutex         sync.Mutex
+		writeMutex         sync.Mutex          // handshake, kick and queued frames share one connection
 		conn               net.Conn            // low-level conn fd
 		decoder            codec.PacketDecoder // binary decoder
 		encoder            codec.PacketEncoder // binary encoder
@@ -81,18 +83,21 @@ type (
 	}
 
 	pendingMessage struct {
-		ctx     context.Context
-		typ     message.Type // message type
-		route   string       // message route (push)
-		mid     uint         // response message id (response)
-		payload interface{}  // payload
-		err     bool         // if its an error message
+		nonBlocking bool
+		ctx         context.Context
+		typ         message.Type // message type
+		route       string       // message route (push)
+		mid         uint         // response message id (response)
+		payload     interface{}  // payload
+		err         bool         // if its an error message
 	}
 
 	pendingWrite struct {
-		ctx  context.Context
-		data []byte
-		err  error
+		echoMID    uint
+		queueStart time.Time
+		ctx        context.Context
+		data       []byte
+		err        error
 	}
 )
 
@@ -135,7 +140,7 @@ func NewAgent(
 
 	// binding session
 	s := session.New(a, true)
-	metrics.ReportNumberOfConnectedClients(metricsReporters, session.SessionCount)
+	metrics.ReportNumberOfConnectedClients(metricsReporters, atomic.LoadInt64(&session.SessionCount))
 	a.Session = s
 	return a
 }
@@ -207,16 +212,38 @@ func (a *Agent) send(pendingMsg pendingMessage) (err error) {
 		data: p,
 	}
 
+	if constants.EchoTrace && pendingMsg.mid != 0 && pcontext.GetFromPropagateCtx(pendingMsg.ctx, constants.EchoMIDKey) != nil {
+		pWrite.echoMID = pendingMsg.mid
+		pWrite.queueStart = time.Now()
+	}
 	if pendingMsg.err {
 		pWrite.err = util.GetErrorFromPayload(a.serializer, m.Data)
 	}
 
+	if pendingMsg.nonBlocking {
+		select {
+		case <-a.chDie:
+			return constants.ErrBrokenPipe
+		case a.chSend <- pWrite:
+			return nil
+		default:
+			return e.New("session write queue full")
+		}
+	}
 	// chSend is never closed so we need this to don't block if agent is already closed
 	select {
 	case a.chSend <- pWrite:
 	case <-a.chDie:
 	}
 	return
+}
+
+// TryPush uses the normal encoder but never waits for a slow client's writer.
+func (a *Agent) TryPush(route string, v interface{}) error {
+	if a.GetStatus() == constants.StatusClosed {
+		return constants.ErrBrokenPipe
+	}
+	return a.send(pendingMessage{typ: message.Push, route: route, payload: v, nonBlocking: true})
 }
 
 // Push implementation for session.NetworkEntity interface
@@ -287,7 +314,7 @@ func (a *Agent) Close() error {
 		onSessionClosed(a.Session)
 	}
 
-	metrics.ReportNumberOfConnectedClients(a.metricsReporters, session.SessionCount)
+	metrics.ReportNumberOfConnectedClients(a.metricsReporters, atomic.LoadInt64(&session.SessionCount))
 
 	return a.conn.Close()
 }
@@ -315,8 +342,7 @@ func (a *Agent) Kick(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	_, err = a.conn.Write(p)
-	return err
+	return a.writePacket(p)
 }
 
 // SetLastAt sets the last at to now
@@ -409,7 +435,13 @@ func onSessionClosed(s *session.Session) {
 
 // SendHandshakeResponse sends a handshake response
 func (a *Agent) SendHandshakeResponse() error {
-	_, err := a.conn.Write(hrd)
+	return a.writePacket(hrd)
+}
+
+func (a *Agent) writePacket(data []byte) error {
+	a.writeMutex.Lock()
+	defer a.writeMutex.Unlock()
+	_, err := a.conn.Write(data)
 	return err
 }
 
@@ -423,7 +455,15 @@ func (a *Agent) write() {
 		select {
 		case pWrite := <-a.chSend:
 			// close agent if low-level Conn broken
-			if _, err := a.conn.Write(pWrite.data); err != nil {
+			var writing time.Time
+			if pWrite.echoMID != 0 {
+				writing = time.Now()
+			}
+			err := a.writePacket(pWrite.data)
+			if pWrite.echoMID != 0 {
+				logger.Log.Infof("echo_diag stage=connector_write account=%s sid=%d mid=%d trace=%v queue_us=%d write_us=%d bytes=%d error=%t", a.Session.UID(), a.Session.ID(), pWrite.echoMID, pcontext.GetFromPropagateCtx(pWrite.ctx, constants.RequestIDKey), writing.Sub(pWrite.queueStart).Microseconds(), time.Since(writing).Microseconds(), len(pWrite.data), err != nil)
+			}
+			if err != nil {
 				tracing.FinishSpan(pWrite.ctx, err)
 				metrics.ReportTimingFromCtx(pWrite.ctx, a.metricsReporters, handlerType, err)
 				logger.Log.Errorf("Failed to write in conn: %s", err.Error())

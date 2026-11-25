@@ -36,7 +36,6 @@ import (
 	"github.com/hnlxhzw/pitaya/acceptor"
 
 	"github.com/gorilla/websocket"
-	"github.com/sirupsen/logrus"
 	"github.com/hnlxhzw/pitaya"
 	"github.com/hnlxhzw/pitaya/conn/codec"
 	"github.com/hnlxhzw/pitaya/conn/message"
@@ -44,6 +43,7 @@ import (
 	"github.com/hnlxhzw/pitaya/logger"
 	"github.com/hnlxhzw/pitaya/session"
 	"github.com/hnlxhzw/pitaya/util/compression"
+	"github.com/sirupsen/logrus"
 )
 
 // HandshakeSys struct
@@ -66,6 +66,8 @@ type pendingRequest struct {
 
 // Client struct
 type Client struct {
+	// EchoTraceAccount identifies a diagnostic bot; zero disables SDK wire logging.
+	EchoTraceAccount    atomic.Int64
 	conn                net.Conn
 	Connected           bool
 	packetEncoder       codec.PacketEncoder
@@ -215,6 +217,9 @@ func (c *Client) pendingRequestsReaper() {
 				}
 			}
 			for _, pendingReq := range toDelete {
+				if acc := c.EchoTraceAccount.Load(); acc != 0 {
+					fmt.Printf("echo_diag stage=bot_sdk_timeout account=%d mid=%d age_us=%d at_us=%d\n", acc, pendingReq.msg.ID, time.Since(pendingReq.sentAt).Microseconds(), time.Now().UnixMicro())
+				}
 				err := pitaya.Error(errors.New("request timeout"), "PIT-504")
 				errMarshalled, _ := json.Marshal(err)
 				// send a timeout to incoming msg chan
@@ -246,7 +251,11 @@ func (c *Client) handlePackets() {
 				logger.Log.Debug("got data: %s", string(p.Data))
 				m, err := message.Decode(p.Data)
 				if err != nil {
-					logger.Log.Errorf("error decoding msg from sv: %s", string(m.Data))
+					logger.Log.Errorf("error decoding msg from sv: %v", err)
+					continue
+				}
+				if m.Type == message.Response && c.EchoTraceAccount.Load() != 0 {
+					fmt.Printf("echo_diag stage=bot_wire account=%d mid=%d error_frame=%t at_us=%d\n", c.EchoTraceAccount.Load(), m.ID, m.Err, time.Now().UnixMicro())
 				}
 				if m.Type == message.Response {
 					c.pendingReqMutex.Lock()
