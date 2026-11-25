@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -37,6 +38,7 @@ import (
 )
 
 type etcdServiceDiscovery struct {
+	initialRevision        int64 // etcd revision of the first successful server snapshot
 	cli                    *clientv3.Client
 	config                 *config.Config
 	syncServersInterval    time.Duration
@@ -220,8 +222,7 @@ func (sd *etcdServiceDiscovery) bootstrapServer(server *Server) error {
 		return err
 	}
 
-	sd.SyncServers()
-	return nil
+	return sd.SyncServers()
 }
 
 // AddListener adds a listener to etcd service discovery
@@ -369,7 +370,8 @@ func (sd *etcdServiceDiscovery) Init() error {
 	// update servers
 	syncServersTicker := time.NewTicker(sd.syncServersInterval)
 	go func() {
-		for sd.running {
+		defer syncServersTicker.Stop()
+		for {
 			select {
 			case <-syncServersTicker.C:
 				err := sd.SyncServers()
@@ -531,6 +533,7 @@ func (sd *etcdServiceDiscovery) SyncServers() error {
 	sd.deleteLocalInvalidServers(allIds)
 
 	sd.printServers()
+	atomic.CompareAndSwapInt64(&sd.initialRevision, 0, keys.Header.Revision)
 	sd.lastSyncTime = time.Now()
 	return nil
 }
@@ -585,10 +588,14 @@ func (sd *etcdServiceDiscovery) addServer(sv *Server) {
 }
 
 func (sd *etcdServiceDiscovery) watchEtcdChanges() {
-	w := sd.cli.Watch(context.Background(), "servers/", clientv3.WithPrefix())
+	ctx, cancel := context.WithCancel(context.Background())
+	// Replay registrations that happened after bootstrap, including those published
+	// before etcd accepted this watch request.
+	w := sd.cli.Watch(ctx, "servers/", clientv3.WithPrefix(), clientv3.WithRev(atomic.LoadInt64(&sd.initialRevision)+1))
 
 	go func(chn clientv3.WatchChan) {
-		for sd.running {
+		defer cancel()
+		for {
 			select {
 			case wResp, ok := <-chn:
 				if wResp.Err() != nil {
@@ -596,6 +603,7 @@ func (sd *etcdServiceDiscovery) watchEtcdChanges() {
 				}
 				if !ok {
 					logger.Log.Error("etcd watcher died")
+					return
 				}
 				for _, ev := range wResp.Events {
 					svType, svID, err := parseEtcdKey(string(ev.Kv.Key))
