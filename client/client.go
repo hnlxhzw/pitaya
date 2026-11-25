@@ -69,7 +69,10 @@ type Client struct {
 	// EchoTraceAccount identifies a diagnostic bot; zero disables SDK wire logging.
 	EchoTraceAccount    atomic.Int64
 	conn                net.Conn
-	Connected           bool
+	Connected           bool // Use ConnectedStatus for concurrent reads.
+	stateMu             sync.RWMutex
+	dialMu              sync.Mutex
+	workers             sync.WaitGroup
 	packetEncoder       codec.PacketEncoder
 	packetDecoder       codec.PacketDecoder
 	packetChan          chan *packet.Packet
@@ -92,7 +95,16 @@ func (c *Client) MsgChannel() chan *message.Message {
 
 // ConnectedStatus return the connection status
 func (c *Client) ConnectedStatus() bool {
+	c.stateMu.RLock()
+	defer c.stateMu.RUnlock()
 	return c.Connected
+}
+
+// Done is closed when this established connection disconnects.
+func (c *Client) Done() <-chan struct{} {
+	c.stateMu.RLock()
+	defer c.stateMu.RUnlock()
+	return c.closeChan
 }
 
 // New returns a new client
@@ -160,6 +172,9 @@ func (c *Client) handleHandshakeResponse() error {
 		return err
 	}
 
+	if len(packets) == 0 {
+		return io.ErrUnexpectedEOF
+	}
 	handshakePacket := packets[0]
 	if handshakePacket.Type != packet.Handshake {
 		return fmt.Errorf("got first packet from server that is not a handshake, aborting")
@@ -192,12 +207,18 @@ func (c *Client) handleHandshakeResponse() error {
 		return err
 	}
 
+	if handshake.Sys.Heartbeat <= 0 {
+		return fmt.Errorf("invalid handshake heartbeat interval")
+	}
+	c.stateMu.Lock()
+	c.closeChan = make(chan struct{})
 	c.Connected = true
+	c.stateMu.Unlock()
 
-	go c.sendHeartbeats(handshake.Sys.Heartbeat)
-	go c.handleServerMessages()
-	go c.handlePackets()
-	go c.pendingRequestsReaper()
+	for _, run := range []func(){func() { c.sendHeartbeats(handshake.Sys.Heartbeat) }, c.handleServerMessages, c.handlePackets, c.pendingRequestsReaper} {
+		c.workers.Add(1)
+		go func(run func()) { defer c.workers.Done(); run() }(run)
+	}
 
 	return nil
 }
@@ -216,6 +237,11 @@ func (c *Client) pendingRequestsReaper() {
 					toDelete = append(toDelete, v)
 				}
 			}
+			for _, r := range toDelete {
+				delete(c.pendingRequests, r.msg.ID)
+				<-c.pendingChan
+			}
+			c.pendingReqMutex.Unlock()
 			for _, pendingReq := range toDelete {
 				if acc := c.EchoTraceAccount.Load(); acc != 0 {
 					fmt.Printf("echo_diag stage=bot_sdk_timeout account=%d mid=%d age_us=%d at_us=%d\n", acc, pendingReq.msg.ID, time.Since(pendingReq.sentAt).Microseconds(), time.Now().UnixMicro())
@@ -230,11 +256,14 @@ func (c *Client) pendingRequestsReaper() {
 					Data:  errMarshalled,
 					Err:   true,
 				}
-				delete(c.pendingRequests, pendingReq.msg.ID)
-				<-c.pendingChan
-				c.IncomingMsgChan <- m
+
+				select {
+				case c.IncomingMsgChan <- m:
+				case <-c.closeChan:
+					return
+				}
 			}
-			c.pendingReqMutex.Unlock()
+
 		case <-c.closeChan:
 			return
 		}
@@ -268,7 +297,11 @@ func (c *Client) handlePackets() {
 					}
 					c.pendingReqMutex.Unlock()
 				}
-				c.IncomingMsgChan <- m
+				select {
+				case c.IncomingMsgChan <- m:
+				case <-c.closeChan:
+					return
+				}
 			case packet.Kick:
 				logger.Log.Warn("got kick packet from the server! disconnecting...")
 				c.Disconnect()
@@ -280,49 +313,64 @@ func (c *Client) handlePackets() {
 }
 
 func (c *Client) readPackets(buf *bytes.Buffer) ([]*packet.Packet, error) {
-	// listen for sv messages
 	data := make([]byte, 2048)
-	//n := len(data)
-	var err error
-
-	//OuterLoop:
+	_, framed := c.conn.(*acceptor.WSConn)
 	for {
-		n, err := c.conn.Read(data)
-		if err == io.EOF {
+		n, readErr := c.conn.Read(data)
+		if n > 0 {
 			buf.Write(data[:n])
-			break
-		} else if err != nil {
-			return nil, err
 		}
-
-		buf.Write(data[:n])
+		if readErr != nil && readErr != io.EOF {
+			return nil, readErr
+		}
+		// A WebSocket reader returns EOF at the end of an individual frame.
+		if framed && readErr == nil {
+			continue
+		}
+		if buf.Len() >= codec.HeadLength {
+			size, _, err := codec.ParseHeader(buf.Bytes()[:codec.HeadLength])
+			if err != nil {
+				return nil, err
+			}
+			if buf.Len()-codec.HeadLength >= size {
+				packets, err := c.packetDecoder.Decode(buf.Bytes())
+				if err != nil {
+					return nil, err
+				}
+				for _, p := range packets {
+					buf.Next(codec.HeadLength + p.Length)
+				}
+				return packets, nil
+			}
+		}
+		if readErr == io.EOF && !framed {
+			if buf.Len() > 0 {
+				return nil, io.ErrUnexpectedEOF
+			}
+			return nil, io.EOF
+		}
 	}
 
-	packets, err := c.packetDecoder.Decode(buf.Bytes())
-	if err != nil {
-		logger.Log.Errorf("error decoding packet from server: %s", err.Error())
-	}
-	totalProcessed := 0
-	for _, p := range packets {
-		totalProcessed += codec.HeadLength + p.Length
-	}
-	buf.Next(totalProcessed)
-
-	return packets, nil
 }
 
 func (c *Client) handleServerMessages() {
 	buf := bytes.NewBuffer(nil)
 	defer c.Disconnect()
-	for c.Connected {
+	for c.ConnectedStatus() {
 		packets, err := c.readPackets(buf)
-		if err != nil && c.Connected {
-			logger.Log.Error(err)
+		if err != nil {
+			if c.ConnectedStatus() {
+				logger.Log.Error(err)
+			}
 			break
 		}
 
 		for _, p := range packets {
-			c.packetChan <- p
+			select {
+			case c.packetChan <- p:
+			case <-c.closeChan:
+				return
+			}
 		}
 	}
 }
@@ -350,6 +398,8 @@ func (c *Client) sendHeartbeats(interval int) {
 
 // Disconnect disconnects the client
 func (c *Client) Disconnect() {
+	c.stateMu.Lock()
+	defer c.stateMu.Unlock()
 	if c.Connected {
 		c.Connected = false
 		close(c.closeChan)
@@ -357,9 +407,29 @@ func (c *Client) Disconnect() {
 	}
 }
 
+// Called under dialMu, before starting a new generation of workers.
+func (c *Client) prepareConnection() error {
+	if c.ConnectedStatus() {
+		return fmt.Errorf("client already connected")
+	}
+	c.workers.Wait()
+	c.pendingReqMutex.Lock()
+	c.pendingRequests = make(map[uint]*pendingRequest)
+	c.pendingChan = make(chan bool, cap(c.pendingChan))
+	c.pendingReqMutex.Unlock()
+	c.packetChan = make(chan *packet.Packet, cap(c.packetChan))
+	return nil
+}
+
 // ConnectTo connects to the server at addr, for now the only supported protocol is tcp
 // if tlsConfig is sent, it connects using TLS
 func (c *Client) ConnectTo(addr string, tlsConfig ...*tls.Config) error {
+	c.dialMu.Lock()
+	defer c.dialMu.Unlock()
+	if err := c.prepareConnection(); err != nil {
+		return err
+	}
+
 	var conn net.Conn
 	var err error
 	if len(tlsConfig) > 0 {
@@ -374,18 +444,23 @@ func (c *Client) ConnectTo(addr string, tlsConfig ...*tls.Config) error {
 	c.IncomingMsgChan = make(chan *message.Message, 10)
 
 	if err = c.handleHandshake(); err != nil {
+		c.conn.Close()
 		return err
 	}
-
-	c.closeChan = make(chan struct{})
 
 	return nil
 }
 
 // ConnectToWS connects using webshocket protocol
 func (c *Client) ConnectToWS(addr string, path string, tlsConfig ...*tls.Config) error {
+	c.dialMu.Lock()
+	defer c.dialMu.Unlock()
+	if err := c.prepareConnection(); err != nil {
+		return err
+	}
+
 	u := url.URL{Scheme: "ws", Host: addr, Path: path}
-	dialer := websocket.DefaultDialer
+	dialer := *websocket.DefaultDialer
 	dialer.WriteBufferSize = 40960
 	dialer.ReadBufferSize = 40960
 
@@ -401,16 +476,16 @@ func (c *Client) ConnectToWS(addr string, path string, tlsConfig ...*tls.Config)
 
 	c.conn, err = acceptor.NewWSConn(conn)
 	if err != nil {
+		conn.Close()
 		return err
 	}
 
 	c.IncomingMsgChan = make(chan *message.Message, 10)
 
 	if err = c.handleHandshake(); err != nil {
+		c.conn.Close()
 		return err
 	}
-
-	c.closeChan = make(chan struct{})
 
 	return nil
 }
@@ -453,6 +528,16 @@ func (c *Client) buildPacket(msg message.Message) ([]byte, error) {
 // sendMsg sends the request to the server
 func (c *Client) sendMsg(msgType message.Type, route string, data []byte) (uint, error) {
 	// TODO mount msg and encode
+	c.dialMu.Lock()
+	defer c.dialMu.Unlock()
+	if c.conn == nil {
+		return 0, io.ErrClosedPipe
+	}
+	select {
+	case <-c.closeChan:
+		return 0, io.ErrClosedPipe
+	default:
+	}
 	m := message.Message{
 		Type:  msgType,
 		ID:    uint(atomic.AddUint32(&c.nextID, 1)),
@@ -461,8 +546,15 @@ func (c *Client) sendMsg(msgType message.Type, route string, data []byte) (uint,
 		Err:   false,
 	}
 	p, err := c.buildPacket(m)
+	if err != nil {
+		return m.ID, err
+	}
 	if msgType == message.Request {
-		c.pendingChan <- true
+		select {
+		case c.pendingChan <- true:
+		case <-c.closeChan:
+			return m.ID, io.ErrClosedPipe
+		}
 		c.pendingReqMutex.Lock()
 		if _, ok := c.pendingRequests[m.ID]; !ok {
 			c.pendingRequests[m.ID] = &pendingRequest{
@@ -473,10 +565,15 @@ func (c *Client) sendMsg(msgType message.Type, route string, data []byte) (uint,
 		c.pendingReqMutex.Unlock()
 	}
 
-	if err != nil {
-		return m.ID, err
-	}
 	_, err = c.write(p)
+	if err != nil && msgType == message.Request {
+		c.pendingReqMutex.Lock()
+		if _, ok := c.pendingRequests[m.ID]; ok {
+			delete(c.pendingRequests, m.ID)
+			<-c.pendingChan
+		}
+		c.pendingReqMutex.Unlock()
+	}
 	return m.ID, err
 }
 
